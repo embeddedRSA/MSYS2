@@ -81,14 +81,17 @@ char SRAMstring[] = "String in SRAM";
 int i;
   // Initialize the display
   LCDInit();
-
+ //
   // Loading UDC (CGRAM) with the dot patterns for Æ,Ø,Å,æ,ø,å
+  
+
   LCDLoadUDC(0,capital_ae);
   LCDLoadUDC(1,capital_oe);
   LCDLoadUDC(2,capital_aa);
   LCDLoadUDC(3,minor_ae);
   LCDLoadUDC(4,minor_oe);
   LCDLoadUDC(5,minor_aa);
+
 
   while (1)
   {
@@ -128,22 +131,22 @@ int i;
     _delay_ms(2000);
 
     // Visible cursor
-    LCDOnOffControl(1,0);
+    //LCDOnOffControl(1,0);
     _delay_ms(1000);
     // Goto line 2, 4.character
     LCDGotoXY(3,1);
     // Blinking characters
-    LCDOnOffControl(0,1);
+    //LCDOnOffControl(0,1);
     _delay_ms(2000);
     // Blinking character with visible cursor
-    LCDOnOffControl(1,1);
+    //LCDOnOffControl(1,1);
     _delay_ms(2000);
 
     // Move cursor 2 positions to the left
-    LCDCursorLeft();
-    LCDCursorLeft();
+    //LCDCursorLeft();
+    //LCDCursorLeft();
     _delay_ms(1000);
-
+/**
     // Move cursor 4 positions to the right
     LCDCursorRight();
     LCDCursorRight();
@@ -162,7 +165,8 @@ int i;
     // No blinking characters or cursor
     LCDOnOffControl(0,0);
     // Display clear
-    LCDClear();
+    **/
+	LCDClear();
     // Testing LCDDispInteger()
     for ( i = 0; i < 10; i++ )
     {
@@ -175,6 +179,7 @@ int i;
       _delay_ms(500);
     }
 	// Testing setBacklight()
+	/**
     for ( i = 0; i <= 100; i++ )
     {
       setBacklight(i);
@@ -195,5 +200,6 @@ int i;
       LCDDispChar(readKeys()+'0');
 	  _delay_ms(100);
 	}
+	**/
   }
 }

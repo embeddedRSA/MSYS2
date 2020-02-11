@@ -32,4 +32,7 @@ void LCDShiftLeft();
 void LCDShiftRight();
 void setBacklight(unsigned char percent);
 unsigned char readKeys();
+
+//Debug
+void testIns(unsigned char data);
 //-------------------------------------------------------------

@@ -87,6 +87,11 @@ static void sendInstruction(unsigned char data)
 	waitBusy();
 }
 
+void testIns(unsigned char data)
+{
+	sendInstruction(data);
+}
+
 static void sendData(unsigned char data)
 {
   	setRs(true);
@@ -159,9 +164,9 @@ void LCDGotoXY( unsigned char x, unsigned char y )
 	unsigned char instruc = 0b10000000;
 	uint8_t ddramMap[2][16] = {{0,1,2,3,4,5,6,7,8,9,0xA,0xB,0xC,0xD,0xE,0xF},{0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4A,0x4B,0x4C,0x4D,0x4E,0x4F}};
 
-	if((x < 17)&&(y<3))
+	if((x < 16)&&(y<2))
 	{
-		instruc |= ddramMap[y-1][x-1];
+		instruc |= ddramMap[y][x];
 		sendInstruction( instruc );
 	}
 }
@@ -185,23 +190,25 @@ void LCDDispString(char* str)
 // Displays the value of integer "i" at "current display position"
 void LCDDispInteger(int i)
 {
-	int myInt = i;
-	uint8_t integersToDisp[5] = {0};
-	uint8_t cnt = 0;
-
-	while(myInt>=10)
-	{
-		myInt -= 10;
-	}
-	
-	unsigned char charint = itoa(i);
+	char buff[10] = {0};
+		
+	itoa(i,buff,10);
+	LCDDispString(buff);
 }
 
 // Loads one of the 8 user definable characters (UDC) with a dot-pattern,
 // pre-defined in an 8 byte array in FLASH memory
 void LCDLoadUDC(unsigned char UDCNo, const unsigned char *UDCTab)
 {
-  // To be implemented
+	uint8_t i = 0;
+	unsigned char instruc = 0b01000000; //set instruction frame
+	instruc |= (UDCNo<<3); //add CGRAM global addr
+	
+	for (i=0; i<8; i++)		//8 rows
+	{
+		sendInstruction((instruc|i)); //set local addr
+		sendData(UDCTab[i]); //send indexed row
+	}
 }
 
 // Selects, if the cursor has to be visible, and if the character at
@@ -247,5 +254,6 @@ void setBacklight(unsigned char percent)
 // Returns 0, if no key pressed
 unsigned char readKeys()
 {
+	return 0;
   // To be implemented
 }
