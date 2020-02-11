@@ -3,7 +3,7 @@
 
   Driver for "LCD Keypad Shield" alphanumeric display.
   Display controller = HD44780U (LCD-II).
-  
+
   Max. uC clock frequency = 16 MHz (Tclk = 62,5 ns)
 
   Connection : PORTx (4 bit mode) :
@@ -48,22 +48,22 @@ static void setRs(bool state)
 static void waitBusy()
 {
   _delay_ms(2);
-}  
+}
 
 static void delayTicks(uint8_t ticks)
 {
 	uint8_t i = 0;
 	for(i=0;i<ticks;i++)
 	{
-		_NOP();
+		_NOP(); //one tick is 62.5ns
 	}
 }
 
 static void pulse_E()
 {
-  PORTH |= 0b01000000;
-  delayTicks(4);
-  PORTH &= 0b10111111;
+  PORTH |= 0b01000000; //SET E HIGH
+  delayTicks(4); //PW_EH
+  PORTH &= 0b10111111; //ET E LOW
   delayTicks(1); //try 2 also
 }
 
@@ -72,13 +72,13 @@ static void set4DataPins(unsigned char data)
 {
   PORTH = (PORTH & 0b11100111) | ((data<<1) & 0b00011000);
   PORTE = (PORTE & 0b11110111) | ((data<<2) & 0b00001000);
-  PORTG = (PORTG & 0b11011111) | ((data<<5) & 0b00100000);  
+  PORTG = (PORTG & 0b11011111) | ((data<<5) & 0b00100000);
 }
 // Following timing diagram page 22
 static void sendInstruction(unsigned char data)
-{   
+{
 	setRs(false);
-	delayTicks(1);
+	delayTicks(1); // wait t_AS wait for controller ready to receive data
 	set4DataPins(data >> 4); // MSB bits ready
 	pulse_E();
 	set4DataPins(data);
@@ -88,15 +88,15 @@ static void sendInstruction(unsigned char data)
 }
 
 static void sendData(unsigned char data)
-{      
+{
   	setRs(true);
-  	delayTicks(1); // wait for controller ready to receive data
+  	delayTicks(1); // wait t_AS wait for controller ready to receive data
   	set4DataPins(data >> 4); // MSB bits ready
   	pulse_E(); // Signal controller to read pin data
   	set4DataPins(data);
   	pulse_E();
   	setRs(false);
-	waitBusy();
+	  waitBusy();
 }
 
 //*********************** PUBLIC functions *****************************
@@ -110,14 +110,14 @@ void LCDInit()
   DDRH |= 0b01111000;  // Outputs
   DDRE |= 0b00001000;
   DDRG |= 0b00100000;
-  
+
   // Wait 50 ms (min. 15 ms demanded according to the data sheet)
   _delay_ms(50);
   // Function set (still 8 bit interface)
   PORTG |= 0b00100000;
   PORTE |= 0b00001000;
   pulse_E();
-  
+
   // Wait 10 ms (min. 4,1 ms demanded according to the data sheet)
   _delay_ms(10);
   // Function set (still 8 bit interface)
@@ -138,7 +138,7 @@ void LCDInit()
   sendInstruction( 0b00101000 );
   // Display, cursor and blinking OFF
   sendInstruction( 0b00001000 );
-  // Clear display and set DDRAM adr = 0	
+  // Clear display and set DDRAM adr = 0
   sendInstruction( 0b00000001 );
   // By display writes : Increment cursor / no shift
   sendInstruction( 0b00000110 );
@@ -158,7 +158,7 @@ void LCDGotoXY( unsigned char x, unsigned char y )
 {
 	unsigned char instruc = 0b10000000;
 	uint8_t ddramMap[2][16] = {{0,1,2,3,4,5,6,7,8,9,0xA,0xB,0xC,0xD,0xE,0xF},{0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4A,0x4B,0x4C,0x4D,0x4E,0x4F}};
-		
+
 	if((x < 17)&&(y<3))
 	{
 		instruc |= ddramMap[y-1][x-1];
@@ -188,7 +188,7 @@ void LCDDispInteger(int i)
 	int myInt = i;
 	uint8_t integersToDisp[5] = {0};
 	uint8_t cnt = 0;
-	
+
 	while(myInt>=10)
 	{
 		myInt -= 10;
@@ -201,7 +201,7 @@ void LCDDispInteger(int i)
 // pre-defined in an 8 byte array in FLASH memory
 void LCDLoadUDC(unsigned char UDCNo, const unsigned char *UDCTab)
 {
-  // To be implemented		
+  // To be implemented
 }
 
 // Selects, if the cursor has to be visible, and if the character at
