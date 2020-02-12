@@ -217,47 +217,105 @@ void LCDLoadUDC(unsigned char UDCNo, const unsigned char *UDCTab)
 // "blink" not 0 => the character at the cursor position blinks.
 void LCDOnOffControl(unsigned char cursor, unsigned char blink)
 {
-  // To be implemented
+	// To be implemented
+	unsigned char instruc = 0b00001100;
+
+	if(cursor<2)
+	{
+		instruc |= cursor<<1;
+	}
+	else
+	{
+		return;
+	}
+
+	if (blink<2) {
+		instruc |= blink;
+	}
+	else
+	{
+		return;
+	}
+	sendInstruction( instruc );
 }
 
 // Moves the cursor to the left
 void LCDCursorLeft()
 {
-  // To be implemented
+	unsigned char instruc = 0b00010000;
+
+	sendInstruction( instruc );
+
 }
 
 // Moves the cursor to the right
 void LCDCursorRight()
 {
-  // To be implemented
+	unsigned char instruc = 0b00010100;
+
+	sendInstruction( instruc );
 }
 
 // Moves the display text one position to the left
 void LCDShiftLeft()
 {
-  // To be implemented
+	unsigned char instruc = 0b00011000;
+
+	sendInstruction( instruc );
 }
 
 // Moves the display text one position to the right
 void LCDShiftRight()
 {
-  // To be implemented
+	unsigned char instruc = 0b00011100;
+
+	sendInstruction( instruc );
 }
+// Reads the status for the 5 on board keys
+// Returns 0, if no key pressed
+
+unsigned char readKeys()
+{
+	//DDRF&=0b11111110; //set analong pin to input
+	
+	ADMUX|=0b01100000; //AVCC refference, ADLAR = 1, ADC 0 10x
+	//ADMUX|=0b0010000; //left adjust
+	//ADMUX|=0b00000; //do nothing to choose ADC0 with single ended input no gain
+
+
+	ADCSRA|=0b11000111; //set prescaler 128
+	
+	delayTicks(26);
+	
+	unsigned char ADCVAL= ADCH;
+	
+	if (ADCVAL<200) 
+	{
+		return 1;
+		
+	} else if (ADCVAL<120)
+	{
+		return 2;
+	} else if (ADCVAL<80)
+	{
+		return 3;
+	} else if (ADCVAL<10)
+	{
+		return 4;
+	}
+	
+	return 0;
+	
+}
+
 
 // Sets the backlight intensity to "percent" (0-100)
 void setBacklight(unsigned char percent)
 {
-   DDRB=0xFF;
-   TCCR2A = 0b10100001; //sætter timer 2A
-   TCCR2A = 0b00001011; //PWM ud ben på 7 board
-   unsigned int backLight=percent*255/100;
-   OCR2A = backLight;
-}
-
-// Reads the status for the 5 on board keys
-// Returns 0, if no key pressed
-unsigned char readKeys()
-{
-	return 0;
-  // To be implemented
+	uint8_t percentP = (percent > 0) ? percent:1;
+	uint16_t backLight= ((100-percentP)<<8)/100;
+	DDRB=0xFF;
+	OCR2A = (uint8_t)backLight;
+	TCCR2B = 0b00000001; //sætter timer 2A 8 non prescale
+	TCCR2A = 0b11000011; //Toggle OC2A on compare match
 }
