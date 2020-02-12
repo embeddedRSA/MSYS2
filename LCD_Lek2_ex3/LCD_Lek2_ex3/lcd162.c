@@ -292,7 +292,7 @@ unsigned char readKeys()
 	if (ADCVAL<10)
 	{
 		return 1;
-		
+		 
 	} else if (ADCVAL<80)
 	{
 		return 2;
