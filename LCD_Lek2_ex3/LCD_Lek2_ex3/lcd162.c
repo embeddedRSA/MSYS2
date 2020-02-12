@@ -247,7 +247,11 @@ void LCDShiftRight()
 // Sets the backlight intensity to "percent" (0-100)
 void setBacklight(unsigned char percent)
 {
-  // To be implemented
+   DDRB=0xFF;
+   TCCR2A = 0b10100001; //sætter timer 2A
+   TCCR2A = 0b00001011; //PWM ud ben på 7 board
+   unsigned int backLight=percent*255/100;
+   OCR2A = backLight;
 }
 
 // Reads the status for the 5 on board keys
