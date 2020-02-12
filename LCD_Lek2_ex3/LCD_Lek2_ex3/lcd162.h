@@ -1,11 +1,9 @@
 /*--------------------------------------------------------------
   File name: "lcd162.h"
-
   Driver for "LCD Keypad Shield" alphanumeric display.
   Display controller = HD44780U (LCD-II).
-  
-  Max. uC clock frequency = 16 MHz (Tclk = 62,5 ns)
 
+  Max. uC clock frequency = 16 MHz (Tclk = 62,5 ns)
   Connection : PORTx (4 bit mode) :
   [LCD]        [Portx]
   RS   ------  PH 5
@@ -15,7 +13,6 @@
   DB5  ------  PE 3
   DB6  ------  PH 3
   DB7  ------  PH 4
-
   Henning Hargaard, February 5, 2018
 --------------------------------------------------------------*/
 void LCDInit();
