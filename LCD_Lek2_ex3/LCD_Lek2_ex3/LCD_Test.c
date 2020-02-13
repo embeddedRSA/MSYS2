@@ -190,7 +190,7 @@ int i;
 	    _delay_ms(50);
     }
 	setBacklight(25);
-	/**
+	
 	// Testing the 5 keys
     // Display clear
     LCDClear();
@@ -200,6 +200,6 @@ int i;
       LCDDispChar(readKeys()+'0');
 	  _delay_ms(100);
 	}
-	**/
+	
   }
 }
