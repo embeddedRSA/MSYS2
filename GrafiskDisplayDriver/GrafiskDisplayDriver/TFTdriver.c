@@ -40,14 +40,54 @@
 
 // LOCAL FUNCTIONS /////////////////////////////////////////////////////////////
 
+static void setBusPortsHigh(void)
+{
+	WR_PORT |= bit<<WR_BIT; //Set WR high, to be able to trigger falling edge
+	DC_PORT |= bit<<DC_BIT; //Set RS high, to be able to trigger falling edge
+	CS_PORT |= bit<<CS_BIT; //Set CS high, to be able to trigger falling edge
+}
+
 // ILI 9341 data sheet, page 238
 void WriteCommand(unsigned int command)
 {
+	uint8_t bit = 0b00000001;
+	
+	//Set command
+	DATA_PORT_HIGH = (uint8_t)(command>>8);
+	DATA_PORT_LOW = (uint8_t)(command&(0x00FF));
+	
+	DC_PORT &= ~(bit<<DC_BIT); //Trigger falling edge, no waiting because other controller is faster than us.
+	CS_PORT &= ~(bit<<CS_BIT);
+	
+	//Write pulse
+	WR_PORT &= ~(bit<<WR_BIT);
+	WR_PORT |= bit<<WR_BIT;
+	
+	CS_PORT |= bit<<CS_BIT; //CS set high
+	WR_PORT &= ~(bit<<WR_BIT);
+	WR_PORT |= bit<<WR_BIT; // clean up, wr back to high	
 }
+
 
 // ILI 9341 data sheet, page 238
 void WriteData(unsigned int data)
 {
+	uint8_t bit = 0b00000001;
+		
+	//Set data
+	DATA_PORT_HIGH = (uint8_t)(data>>8);
+	DATA_PORT_LOW = (uint8_t)(data&(0x00FF));
+		
+	DC_PORT |= bit<<DC_BIT; //Trigger rising edge, no waiting because other controller is faster than us.
+	CS_PORT &= ~(bit<<CS_BIT); // Chip select active low, trigger falling edge
+		
+	//Write pulse
+	WR_PORT &= ~(bit<<WR_BIT);
+	WR_PORT |= bit<<WR_BIT;
+		
+	CS_PORT |= bit<<CS_BIT; //CS set high
+	WR_PORT &= ~(bit<<WR_BIT);
+	WR_PORT |= bit<<WR_BIT; // clean up.
 }
 
 // PUBLIC FUNCTIONS ////////////////////////////////////////////////////////////
