@@ -289,17 +289,17 @@ unsigned char readKeys()
 	
 	unsigned char ADCVAL= ADCH;
 	
-	if (ADCVAL<200) 
+	if (ADCVAL<10)
 	{
 		return 1;
-		
-	} else if (ADCVAL<120)
-	{
-		return 2;
+		 
 	} else if (ADCVAL<80)
 	{
+		return 2;
+	} else if (ADCVAL<120)
+	{
 		return 3;
-	} else if (ADCVAL<10)
+	} else if (ADCVAL<200)
 	{
 		return 4;
 	}

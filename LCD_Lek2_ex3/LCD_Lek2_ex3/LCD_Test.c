@@ -101,14 +101,14 @@ int i;
     LCDGotoXY(2,0);
     // Testing LCD_DispString()
     LCDDispString("X=2, Y=0");
-    _delay_ms(2000);
+    _delay_ms(100);
 
     // Display clear
     LCDClear();
     // Goto line 2, 4.character
     LCDGotoXY(3,1);
     LCDDispString("X=3, Y=1");
-    _delay_ms(2000);
+    _delay_ms(100);
 
     // Display clear
     LCDClear();
@@ -128,24 +128,24 @@ int i;
     LCDGotoXY(0,1);
     // Testing LCDDispString()
     LCDDispString(SRAMstring);
-    _delay_ms(1000);
+    _delay_ms(100);
 
     // Visible cursor
     LCDOnOffControl(1,0);
-    _delay_ms(2000);
+    _delay_ms(100);
     // Goto line 2, 4.character
     LCDGotoXY(3,1);
     // Blinking characters
     LCDOnOffControl(0,1);
-    _delay_ms(2000);
+    _delay_ms(1000);
     // Blinking character with visible cursor
     LCDOnOffControl(1,1);
-    _delay_ms(2000);
+    _delay_ms(100);
 
     // Move cursor 2 positions to the left
 	LCDCursorLeft();
     LCDCursorLeft();
-    _delay_ms(2000);
+    _delay_ms(100);
 
     // Move cursor 4 positions to the right
     LCDCursorRight();
@@ -157,10 +157,10 @@ int i;
     // Shift the display text 2 positions to the right
     LCDShiftRight();
     LCDShiftRight();
-    _delay_ms(2000);
+    _delay_ms(100);
     // Shift the display text 1 position to the left
     LCDShiftLeft();
-    _delay_ms(2000);
+    _delay_ms(100);
 
     // No blinking characters or cursor
     LCDOnOffControl(0,0);
@@ -182,12 +182,12 @@ int i;
     for ( i = 0; i <= 100; i++ )
     {
       setBacklight(i);
-	  _delay_ms(50);
+	  _delay_ms(5);
     }
     for ( i = 0; i <= 100; i++ )
     {
 	    setBacklight(100-i);
-	    _delay_ms(50);
+	    _delay_ms(5);
     }
 	setBacklight(25);
 	
@@ -198,7 +198,7 @@ int i;
 	{
       LCDClear();		
       LCDDispChar(readKeys()+'0');
-	  _delay_ms(100);
+	  _delay_ms(1000);
 	}
 	
   }
