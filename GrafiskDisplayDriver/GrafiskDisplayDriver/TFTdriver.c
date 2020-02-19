@@ -22,6 +22,7 @@
 #include <avr/cpufunc.h>
 #define F_CPU 16000000
 #include <util/delay.h>
+#include "stdbool.h"
 #include "TFTdriver.h"
 
 // Data port definitions:
@@ -38,17 +39,17 @@
 #define RST_PORT PORTG
 #define RST_BIT 0
 
+typedef struct
+{
+	uint8_t red;
+	uint8_t green;
+	uint8_t blue;
+}rgbData_t;
+
 // LOCAL FUNCTIONS /////////////////////////////////////////////////////////////
 
-static void setBusPortsHigh(void)
-{
-	WR_PORT |= bit<<WR_BIT; //Set WR high, to be able to trigger falling edge
-	DC_PORT |= bit<<DC_BIT; //Set RS high, to be able to trigger falling edge
-	CS_PORT |= bit<<CS_BIT; //Set CS high, to be able to trigger falling edge
-}
-
 // ILI 9341 data sheet, page 238
-void WriteCommand(unsigned int command)
+static void WriteCommand(unsigned int command)
 {
 	uint8_t bit = 0b00000001;
 	
@@ -60,17 +61,18 @@ void WriteCommand(unsigned int command)
 	CS_PORT &= ~(bit<<CS_BIT);
 	
 	//Write pulse
-	WR_PORT &= ~(bit<<WR_BIT);
-	WR_PORT |= bit<<WR_BIT;
+	WR_PORT &= ~(bit<<WR_BIT); //WRX low
+	WR_PORT |= bit<<WR_BIT; //WRX high triggers read signal
 	
 	CS_PORT |= bit<<CS_BIT; //CS set high
-	WR_PORT &= ~(bit<<WR_BIT);
-	WR_PORT |= bit<<WR_BIT; // clean up, wr back to high	
+	WR_PORT &= ~(bit<<WR_BIT); //WRX low
+	
+	//clean up??
 }
 
 
 // ILI 9341 data sheet, page 238
-void WriteData(unsigned int data)
+static void WriteData(unsigned int data)
 {
 	uint8_t bit = 0b00000001;
 		
@@ -87,7 +89,8 @@ void WriteData(unsigned int data)
 		
 	CS_PORT |= bit<<CS_BIT; //CS set high
 	WR_PORT &= ~(bit<<WR_BIT);
-	WR_PORT |= bit<<WR_BIT; // clean up.
+	
+	//clean up??
 }
 
 // PUBLIC FUNCTIONS ////////////////////////////////////////////////////////////
@@ -95,45 +98,128 @@ void WriteData(unsigned int data)
 // Initializes (resets) the display
 void DisplayInit()
 {
+	uint8_t bit = 0b00000001;
+	
+	//Set control bits to output
+	DDRG |= (bit<<CS_BIT)|(bit<<RST_BIT)|(bit<<WR_BIT);
+	DDRD |= (bit<<DC_BIT);
+	
+	//Set data ports to output
+	DDRA |= 0xFF;
+	DDRC |= 0xFF;
+	
+	// set control pins start position high
+	DC_PORT |= bit<<DC_BIT;
+	WR_PORT |= bit<<WR_BIT;
+	CS_PORT	|= bit<<CS_BIT;
+	RST_PORT|= bit<<RST_BIT;
+	
+	//Reset grafik display
+	RST_PORT &= ~(bit<<RST_BIT);
+	_delay_ms(500);
+	RST_PORT|= bit<<RST_BIT;
+	_delay_ms(130);
+	
+	// Exit sleep mode
+	SleepOut();
+	// Display on
+	DisplayOn();
+	// Set bit BGR (scanning direction)
+	MemoryAccessControl(0b00001000);
+	// 16 bits (2 bytes) per pixel
+	InterfacePixelFormat(0b00000101);
+	
 }
 
 void DisplayOff()
 {
+	uint16_t command = 0b00101000;
+	WriteCommand(command);
 }
 
 void DisplayOn()
 {
+	uint16_t command = 0b00101001;
+	WriteCommand(command);
 }
 
 void SleepOut()
 {
+	uint16_t command = 0b00010001;
+	WriteCommand(command);
+	
 }
 
 void MemoryAccessControl(unsigned char parameter)
 {
+	uint16_t command = 0b00110110;
+	WriteCommand(command);
+	WriteData(parameter);
 }
 
 void InterfacePixelFormat(unsigned char parameter)
 {
+	uint16_t command = 0b00111010;
+	WriteCommand(command);
+	WriteData(parameter);
+	
 }
 
 void MemoryWrite()
 {
+	uint16_t command = 0b00101100;
+	WriteCommand(command);
 }
 
-// Red 0-31, Green 0-63, Blue 0-31
+static bool isDataOk(rgbData_t* data)
+{
+	return ((data->red < 32) && (data->blue < 32) && (data->green < 64));
+}
+
+static uint16_t rgbDataToInt(rgbData_t* data)
+{
+	uint16_t dataInt = 0;
+	dataInt |= data->blue;
+	dataInt |= data->green << 5;
+	dataInt |= data->red << 11;
+	
+	return dataInt;
+}
+
+// Red 0-31, Green 0-63, Blue 0-31 // side 21 Lesson slides // side 78 datasheet
 void WritePixel(unsigned char Red, unsigned char Green, unsigned char Blue)
 {
+	rgbData_t data;
+	data.red = Red;
+	data.green = Green;
+	data.blue = Blue;
+	
+	if(isDataOk(&data))
+	{
+		WriteData(rgbDataToInt(&data));
+	}
 }
 
 // Set Column Address (0-239), Start > End
 void SetColumnAddress(unsigned int Start, unsigned int End)
 {
+	uint16_t command = 0b00101010;
+	WriteCommand(command);
+	WriteData((Start>>8));
+	WriteData((Start));
+	WriteData((End>>8));
+	WriteData((End));
 }
 
 // Set Page Address (0-319), Start > End
 void SetPageAddress(unsigned int Start, unsigned int End)
 {
+	uint16_t command = 0b00101011;
+	WriteCommand(command);
+	WriteData((Start>>8));
+	WriteData((Start));
+	WriteData((End>>8));
+	WriteData((End));
 }
 
 // Fills rectangle with specified color
@@ -142,4 +228,13 @@ void SetPageAddress(unsigned int Start, unsigned int End)
 // R-G-B = 5-6-5 bits.
 void FillRectangle(unsigned int StartX, unsigned int StartY, unsigned int Width, unsigned int Height, unsigned char Red, unsigned char Green, unsigned char Blue)
 {
+	uint32_t i = 0;
+	SetPageAddress(StartX,(StartX+Width));
+	SetColumnAddress(StartY,(StartY+Height));
+	MemoryWrite();
+	
+	for(i = 0; i<(Width*Height); i++)
+	{
+		WritePixel(Red,Green,Blue);
+	}
 }
