@@ -1,0 +1,906 @@
+
+AVR106.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .data         00000000  00800100  00800100  000004f1  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  1 .bootloader   000001aa  0001e000  0001e000  00000344  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .text         000002b0  00000000  00000000  00000094  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  3 .eeprom       00000003  00810000  00810000  000004ee  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  4 .comment      00000030  00000000  00000000  000004f1  2**0
+                  CONTENTS, READONLY
+  5 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000524  2**2
+                  CONTENTS, READONLY
+  6 .debug_aranges 00000080  00000000  00000000  00000560  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_info   000005e5  00000000  00000000  000005e0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_abbrev 0000029b  00000000  00000000  00000bc5  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_line   00000439  00000000  00000000  00000e60  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_frame  0000019c  00000000  00000000  0000129c  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_str    000002d7  00000000  00000000  00001438  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_loc    00000689  00000000  00000000  0000170f  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 13 .debug_ranges 00000060  00000000  00000000  00001d98  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .bootloader:
+
+0001e000 <WriteBufToFlash>:
+* input argument.
+*/
+
+void WriteBufToFlash(MyAddressType flashStartAdr) BOOTLOADER_SECTION;
+void WriteBufToFlash(MyAddressType flashStartAdr)
+{
+   1e000:	cf 93       	push	r28
+   1e002:	df 93       	push	r29
+   1e004:	00 d0       	rcall	.+0      	; 0x1e006 <WriteBufToFlash+0x6>
+   1e006:	cd b7       	in	r28, 0x3d	; 61
+   1e008:	de b7       	in	r29, 0x3e	; 62
+   1e00a:	9a 83       	std	Y+2, r25	; 0x02
+   1e00c:	89 83       	std	Y+1, r24	; 0x01
+	#ifdef __HAS_RAMPZ__
+    RAMPZ = (unsigned char)(flashStartAdr >> 16);
+    #endif
+    _PAGE_ERASE(flashStartAdr);
+   1e00e:	89 81       	ldd	r24, Y+1	; 0x01
+   1e010:	9a 81       	ldd	r25, Y+2	; 0x02
+   1e012:	a0 e0       	ldi	r26, 0x00	; 0
+   1e014:	b0 e0       	ldi	r27, 0x00	; 0
+   1e016:	23 e0       	ldi	r18, 0x03	; 3
+   1e018:	fc 01       	movw	r30, r24
+   1e01a:	a0 93 5b 00 	sts	0x005B, r26	; 0x80005b <__TEXT_REGION_LENGTH__+0x7e005b>
+   1e01e:	20 93 68 00 	sts	0x0068, r18	; 0x800068 <__TEXT_REGION_LENGTH__+0x7e0068>
+   1e022:	e8 95       	spm
+    while( SPMControllRegister & (1<<SPMEN) ); // Wait until Flash write completed
+   1e024:	80 91 68 00 	lds	r24, 0x0068	; 0x800068 <__TEXT_REGION_LENGTH__+0x7e0068>
+   1e028:	80 fd       	sbrc	r24, 0
+   1e02a:	fc cf       	rjmp	.-8      	; 0x1e024 <WriteBufToFlash+0x24>
+    _PAGE_WRITE(flashStartAdr);
+   1e02c:	89 81       	ldd	r24, Y+1	; 0x01
+   1e02e:	9a 81       	ldd	r25, Y+2	; 0x02
+   1e030:	a0 e0       	ldi	r26, 0x00	; 0
+   1e032:	b0 e0       	ldi	r27, 0x00	; 0
+   1e034:	25 e0       	ldi	r18, 0x05	; 5
+   1e036:	fc 01       	movw	r30, r24
+   1e038:	a0 93 5b 00 	sts	0x005B, r26	; 0x80005b <__TEXT_REGION_LENGTH__+0x7e005b>
+   1e03c:	20 93 68 00 	sts	0x0068, r18	; 0x800068 <__TEXT_REGION_LENGTH__+0x7e0068>
+   1e040:	e8 95       	spm
+    while( SPMControllRegister & (1<<SPMEN) ); // Wait until Flash write completed
+   1e042:	80 91 68 00 	lds	r24, 0x0068	; 0x800068 <__TEXT_REGION_LENGTH__+0x7e0068>
+   1e046:	80 fd       	sbrc	r24, 0
+   1e048:	fc cf       	rjmp	.-8      	; 0x1e042 <WriteBufToFlash+0x42>
+    #ifdef RWWSRE
+    _ENABLE_RWW_SECTION(); // Enable RWW
+   1e04a:	81 e1       	ldi	r24, 0x11	; 17
+   1e04c:	80 93 68 00 	sts	0x0068, r24	; 0x800068 <__TEXT_REGION_LENGTH__+0x7e0068>
+   1e050:	e8 95       	spm
+    #endif
+}
+   1e052:	0f 90       	pop	r0
+   1e054:	0f 90       	pop	r0
+   1e056:	df 91       	pop	r29
+   1e058:	cf 91       	pop	r28
+   1e05a:	08 95       	ret
+
+0001e05c <RecoverFlash>:
+* is enabled.
+*/
+
+unsigned char RecoverFlash() BOOTLOADER_SECTION;
+unsigned char RecoverFlash()
+{
+   1e05c:	cf 93       	push	r28
+   1e05e:	df 93       	push	r29
+	#ifdef __FLASH_RECOVER
+    unsigned int index;
+    if(FlashBackup.status == FLASH_BUFFER_FULL_ID) // Checks if Flash recovery buffer contains data
+   1e060:	80 91 02 00 	lds	r24, 0x0002	; 0x800002 <__TEXT_REGION_LENGTH__+0x7e0002>
+   1e064:	8a 3a       	cpi	r24, 0xAA	; 170
+   1e066:	19 f5       	brne	.+70     	; 0x1e0ae <RecoverFlash+0x52>
+   1e068:	80 e0       	ldi	r24, 0x00	; 0
+   1e06a:	90 e0       	ldi	r25, 0x00	; 0
+   1e06c:	dc 01       	movw	r26, r24
+   1e06e:	c0 e0       	ldi	r28, 0x00	; 0
+   1e070:	df ee       	ldi	r29, 0xEF	; 239
+	{ 
+		for(index=0; index < PAGESIZE; index+=2){     // Writes to Flash write buffer
+        _FILL_TEMP_WORD( index, *((MyFlashIntPointer)(ADR_FLASH_BUFFER+index)) );
+   1e072:	21 e0       	ldi	r18, 0x01	; 1
+   1e074:	49 91       	ld	r20, Y+
+   1e076:	59 91       	ld	r21, Y+
+   1e078:	0a 01       	movw	r0, r20
+   1e07a:	fc 01       	movw	r30, r24
+   1e07c:	a0 93 5b 00 	sts	0x005B, r26	; 0x80005b <__TEXT_REGION_LENGTH__+0x7e005b>
+   1e080:	20 93 68 00 	sts	0x0068, r18	; 0x800068 <__TEXT_REGION_LENGTH__+0x7e0068>
+   1e084:	e8 95       	spm
+   1e086:	11 24       	eor	r1, r1
+   1e088:	02 96       	adiw	r24, 0x02	; 2
+   1e08a:	a1 1d       	adc	r26, r1
+   1e08c:	b1 1d       	adc	r27, r1
+{
+	#ifdef __FLASH_RECOVER
+    unsigned int index;
+    if(FlashBackup.status == FLASH_BUFFER_FULL_ID) // Checks if Flash recovery buffer contains data
+	{ 
+		for(index=0; index < PAGESIZE; index+=2){     // Writes to Flash write buffer
+   1e08e:	81 15       	cp	r24, r1
+   1e090:	31 e0       	ldi	r19, 0x01	; 1
+   1e092:	93 07       	cpc	r25, r19
+   1e094:	a1 05       	cpc	r26, r1
+   1e096:	b1 05       	cpc	r27, r1
+   1e098:	69 f7       	brne	.-38     	; 0x1e074 <RecoverFlash+0x18>
+        _FILL_TEMP_WORD( index, *((MyFlashIntPointer)(ADR_FLASH_BUFFER+index)) );
+    }
+    WriteBufToFlash((MyAddressType)FlashBackup.pageNumber * PAGESIZE);
+   1e09a:	80 e0       	ldi	r24, 0x00	; 0
+   1e09c:	90 91 00 00 	lds	r25, 0x0000	; 0x800000 <__TEXT_REGION_LENGTH__+0x7e0000>
+   1e0a0:	af df       	rcall	.-162    	; 0x1e000 <WriteBufToFlash>
+    FlashBackup.status=0;     // Indicate that Flash buffer does not contain data for writing
+   1e0a2:	10 92 02 00 	sts	0x0002, r1	; 0x800002 <__TEXT_REGION_LENGTH__+0x7e0002>
+    while(EECR & (1<<EEPROM_program_enable));
+   1e0a6:	e1 99       	sbic	0x1c, 1	; 28
+   1e0a8:	fe cf       	rjmp	.-4      	; 0x1e0a6 <RecoverFlash+0x4a>
+    return TRUE;               // Returns TRUE if recovery has taken place
+   1e0aa:	81 e0       	ldi	r24, 0x01	; 1
+   1e0ac:	01 c0       	rjmp	.+2      	; 0x1e0b0 <RecoverFlash+0x54>
+  }
+	#endif
+	return FALSE;
+   1e0ae:	80 e0       	ldi	r24, 0x00	; 0
+}
+   1e0b0:	df 91       	pop	r29
+   1e0b2:	cf 91       	pop	r28
+   1e0b4:	08 95       	ret
+
+0001e0b6 <LpmReplaceSpm>:
+* flashAddr with data, and stores entire page in Flash temporary buffer.
+*/
+
+void LpmReplaceSpm(MyAddressType flashAddr, unsigned char data) BOOTLOADER_SECTION;
+void LpmReplaceSpm(MyAddressType flashAddr, unsigned char data)
+{
+   1e0b6:	cf 92       	push	r12
+   1e0b8:	df 92       	push	r13
+   1e0ba:	ef 92       	push	r14
+   1e0bc:	ff 92       	push	r15
+   1e0be:	1f 93       	push	r17
+   1e0c0:	cf 93       	push	r28
+   1e0c2:	df 93       	push	r29
+   1e0c4:	00 d0       	rcall	.+0      	; 0x1e0c6 <LpmReplaceSpm+0x10>
+   1e0c6:	00 d0       	rcall	.+0      	; 0x1e0c8 <LpmReplaceSpm+0x12>
+   1e0c8:	cd b7       	in	r28, 0x3d	; 61
+   1e0ca:	de b7       	in	r29, 0x3e	; 62
+   1e0cc:	9c 83       	std	Y+4, r25	; 0x04
+   1e0ce:	8b 83       	std	Y+3, r24	; 0x03
+	unsigned int index, oddByte, pcWord;
+    MyAddressType  pageAdr;
+    oddByte=(unsigned char)flashAddr & 1;
+   1e0d0:	2b 81       	ldd	r18, Y+3	; 0x03
+   1e0d2:	3c 81       	ldd	r19, Y+4	; 0x04
+   1e0d4:	21 70       	andi	r18, 0x01	; 1
+   1e0d6:	33 27       	eor	r19, r19
+    pcWord=(unsigned int)flashAddr & (PAGESIZE-2); // Used when writing FLASH temp buffer
+   1e0d8:	4b 81       	ldd	r20, Y+3	; 0x03
+   1e0da:	5c 81       	ldd	r21, Y+4	; 0x04
+   1e0dc:	4e 7f       	andi	r20, 0xFE	; 254
+   1e0de:	55 27       	eor	r21, r21
+    pageAdr=flashAddr & ~(PAGESIZE-1);        // Get FLASH page address from byte address
+   1e0e0:	8b 81       	ldd	r24, Y+3	; 0x03
+   1e0e2:	9c 81       	ldd	r25, Y+4	; 0x04
+   1e0e4:	88 27       	eor	r24, r24
+   1e0e6:	9a 83       	std	Y+2, r25	; 0x02
+   1e0e8:	89 83       	std	Y+1, r24	; 0x01
+	{
+		if(index==pcWord)
+		{
+			if(oddByte)
+			{
+				 _FILL_TEMP_WORD( index, (*(MyFlashCharPointer)(flashAddr & ~1) | 
+   1e0ea:	70 e0       	ldi	r23, 0x00	; 0
+   1e0ec:	f6 2e       	mov	r15, r22
+   1e0ee:	ee 24       	eor	r14, r14
+   1e0f0:	80 e0       	ldi	r24, 0x00	; 0
+   1e0f2:	90 e0       	ldi	r25, 0x00	; 0
+   1e0f4:	dc 01       	movw	r26, r24
+                 _FILL_TEMP_WORD( index, ( (*( (MyFlashCharPointer)flashAddr+1)<<8)  | data ) );
+			}                                     // Write even byte in temporary buffer
+		}
+        else
+	    {
+			_FILL_TEMP_WORD(index, *( (MyFlashIntPointer)(pageAdr+index) ) );
+   1e0f6:	11 e0       	ldi	r17, 0x01	; 1
+    oddByte=(unsigned char)flashAddr & 1;
+    pcWord=(unsigned int)flashAddr & (PAGESIZE-2); // Used when writing FLASH temp buffer
+    pageAdr=flashAddr & ~(PAGESIZE-1);        // Get FLASH page address from byte address
+    for(index=0; index < PAGESIZE; index+=2)
+	{
+		if(index==pcWord)
+   1e0f8:	48 17       	cp	r20, r24
+   1e0fa:	59 07       	cpc	r21, r25
+   1e0fc:	79 f4       	brne	.+30     	; 0x1e11c <LpmReplaceSpm+0x66>
+		{
+			if(oddByte)
+			{
+				 _FILL_TEMP_WORD( index, (*(MyFlashCharPointer)(flashAddr & ~1) | 
+   1e0fe:	eb 81       	ldd	r30, Y+3	; 0x03
+   1e100:	fc 81       	ldd	r31, Y+4	; 0x04
+    pageAdr=flashAddr & ~(PAGESIZE-1);        // Get FLASH page address from byte address
+    for(index=0; index < PAGESIZE; index+=2)
+	{
+		if(index==pcWord)
+		{
+			if(oddByte)
+   1e102:	21 15       	cp	r18, r1
+   1e104:	31 05       	cpc	r19, r1
+   1e106:	29 f0       	breq	.+10     	; 0x1e112 <LpmReplaceSpm+0x5c>
+			{
+				 _FILL_TEMP_WORD( index, (*(MyFlashCharPointer)(flashAddr & ~1) | 
+   1e108:	ee 7f       	andi	r30, 0xFE	; 254
+   1e10a:	e4 91       	lpm	r30, Z
+   1e10c:	67 01       	movw	r12, r14
+   1e10e:	ce 2a       	or	r12, r30
+   1e110:	0b c0       	rjmp	.+22     	; 0x1e128 <LpmReplaceSpm+0x72>
+				 ((unsigned int)data<<8)));
+			}                                     // Write odd byte in temporary buffer
+			 else
+			{
+                 _FILL_TEMP_WORD( index, ( (*( (MyFlashCharPointer)flashAddr+1)<<8)  | data ) );
+   1e112:	31 96       	adiw	r30, 0x01	; 1
+   1e114:	e4 91       	lpm	r30, Z
+   1e116:	6b 01       	movw	r12, r22
+   1e118:	de 2a       	or	r13, r30
+   1e11a:	06 c0       	rjmp	.+12     	; 0x1e128 <LpmReplaceSpm+0x72>
+			}                                     // Write even byte in temporary buffer
+		}
+        else
+	    {
+			_FILL_TEMP_WORD(index, *( (MyFlashIntPointer)(pageAdr+index) ) );
+   1e11c:	e9 81       	ldd	r30, Y+1	; 0x01
+   1e11e:	fa 81       	ldd	r31, Y+2	; 0x02
+   1e120:	e8 0f       	add	r30, r24
+   1e122:	f9 1f       	adc	r31, r25
+   1e124:	c5 90       	lpm	r12, Z+
+   1e126:	d5 90       	lpm	r13, Z+
+   1e128:	06 01       	movw	r0, r12
+   1e12a:	fc 01       	movw	r30, r24
+   1e12c:	a0 93 5b 00 	sts	0x005B, r26	; 0x80005b <__TEXT_REGION_LENGTH__+0x7e005b>
+   1e130:	10 93 68 00 	sts	0x0068, r17	; 0x800068 <__TEXT_REGION_LENGTH__+0x7e0068>
+   1e134:	e8 95       	spm
+   1e136:	11 24       	eor	r1, r1
+   1e138:	02 96       	adiw	r24, 0x02	; 2
+   1e13a:	a1 1d       	adc	r26, r1
+   1e13c:	b1 1d       	adc	r27, r1
+	unsigned int index, oddByte, pcWord;
+    MyAddressType  pageAdr;
+    oddByte=(unsigned char)flashAddr & 1;
+    pcWord=(unsigned int)flashAddr & (PAGESIZE-2); // Used when writing FLASH temp buffer
+    pageAdr=flashAddr & ~(PAGESIZE-1);        // Get FLASH page address from byte address
+    for(index=0; index < PAGESIZE; index+=2)
+   1e13e:	81 15       	cp	r24, r1
+   1e140:	e1 e0       	ldi	r30, 0x01	; 1
+   1e142:	9e 07       	cpc	r25, r30
+   1e144:	a1 05       	cpc	r26, r1
+   1e146:	b1 05       	cpc	r27, r1
+   1e148:	b9 f6       	brne	.-82     	; 0x1e0f8 <LpmReplaceSpm+0x42>
+        else
+	    {
+			_FILL_TEMP_WORD(index, *( (MyFlashIntPointer)(pageAdr+index) ) );
+        }                                       // Write Flash word directly to temporary buffer
+     }
+}
+   1e14a:	0f 90       	pop	r0
+   1e14c:	0f 90       	pop	r0
+   1e14e:	0f 90       	pop	r0
+   1e150:	0f 90       	pop	r0
+   1e152:	df 91       	pop	r29
+   1e154:	cf 91       	pop	r28
+   1e156:	1f 91       	pop	r17
+   1e158:	ff 90       	pop	r15
+   1e15a:	ef 90       	pop	r14
+   1e15c:	df 90       	pop	r13
+   1e15e:	cf 90       	pop	r12
+   1e160:	08 95       	ret
+
+0001e162 <FillBuffer>:
+/*
+*This function fills the temporary bufer with the data
+*/
+void FillBuffer(unsigned char *dataPage) BOOTLOADER_SECTION;
+void FillBuffer(unsigned char *dataPage)
+{
+   1e162:	cf 93       	push	r28
+   1e164:	df 93       	push	r29
+   1e166:	40 e0       	ldi	r20, 0x00	; 0
+   1e168:	50 e0       	ldi	r21, 0x00	; 0
+   1e16a:	ba 01       	movw	r22, r20
+	unsigned int index;
+	for(index = 0; index < PAGESIZE; index+=2){ // Fills Flash write buffer
+		_FILL_TEMP_WORD(index, (unsigned int)dataPage[index]+((unsigned int)dataPage[index+1] << 8));
+   1e16c:	a1 e0       	ldi	r26, 0x01	; 1
+   1e16e:	ec 01       	movw	r28, r24
+   1e170:	29 81       	ldd	r18, Y+1	; 0x01
+   1e172:	30 e0       	ldi	r19, 0x00	; 0
+   1e174:	32 2f       	mov	r19, r18
+   1e176:	22 27       	eor	r18, r18
+   1e178:	e8 81       	ld	r30, Y
+   1e17a:	2e 0f       	add	r18, r30
+   1e17c:	31 1d       	adc	r19, r1
+   1e17e:	09 01       	movw	r0, r18
+   1e180:	fa 01       	movw	r30, r20
+   1e182:	60 93 5b 00 	sts	0x005B, r22	; 0x80005b <__TEXT_REGION_LENGTH__+0x7e005b>
+   1e186:	a0 93 68 00 	sts	0x0068, r26	; 0x800068 <__TEXT_REGION_LENGTH__+0x7e0068>
+   1e18a:	e8 95       	spm
+   1e18c:	11 24       	eor	r1, r1
+   1e18e:	02 96       	adiw	r24, 0x02	; 2
+   1e190:	4e 5f       	subi	r20, 0xFE	; 254
+   1e192:	5f 4f       	sbci	r21, 0xFF	; 255
+   1e194:	6f 4f       	sbci	r22, 0xFF	; 255
+   1e196:	7f 4f       	sbci	r23, 0xFF	; 255
+*/
+void FillBuffer(unsigned char *dataPage) BOOTLOADER_SECTION;
+void FillBuffer(unsigned char *dataPage)
+{
+	unsigned int index;
+	for(index = 0; index < PAGESIZE; index+=2){ // Fills Flash write buffer
+   1e198:	41 15       	cp	r20, r1
+   1e19a:	d1 e0       	ldi	r29, 0x01	; 1
+   1e19c:	5d 07       	cpc	r21, r29
+   1e19e:	61 05       	cpc	r22, r1
+   1e1a0:	71 05       	cpc	r23, r1
+   1e1a2:	29 f7       	brne	.-54     	; 0x1e16e <FillBuffer+0xc>
+		_FILL_TEMP_WORD(index, (unsigned int)dataPage[index]+((unsigned int)dataPage[index+1] << 8));
+	}
+}
+   1e1a4:	df 91       	pop	r29
+   1e1a6:	cf 91       	pop	r28
+   1e1a8:	08 95       	ret
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	45 c0       	rjmp	.+138    	; 0x8c <__ctors_end>
+   2:	00 00       	nop
+   4:	4b c0       	rjmp	.+150    	; 0x9c <__bad_interrupt>
+   6:	00 00       	nop
+   8:	49 c0       	rjmp	.+146    	; 0x9c <__bad_interrupt>
+   a:	00 00       	nop
+   c:	47 c0       	rjmp	.+142    	; 0x9c <__bad_interrupt>
+   e:	00 00       	nop
+  10:	45 c0       	rjmp	.+138    	; 0x9c <__bad_interrupt>
+  12:	00 00       	nop
+  14:	43 c0       	rjmp	.+134    	; 0x9c <__bad_interrupt>
+  16:	00 00       	nop
+  18:	41 c0       	rjmp	.+130    	; 0x9c <__bad_interrupt>
+  1a:	00 00       	nop
+  1c:	3f c0       	rjmp	.+126    	; 0x9c <__bad_interrupt>
+  1e:	00 00       	nop
+  20:	3d c0       	rjmp	.+122    	; 0x9c <__bad_interrupt>
+  22:	00 00       	nop
+  24:	3b c0       	rjmp	.+118    	; 0x9c <__bad_interrupt>
+  26:	00 00       	nop
+  28:	39 c0       	rjmp	.+114    	; 0x9c <__bad_interrupt>
+  2a:	00 00       	nop
+  2c:	37 c0       	rjmp	.+110    	; 0x9c <__bad_interrupt>
+  2e:	00 00       	nop
+  30:	35 c0       	rjmp	.+106    	; 0x9c <__bad_interrupt>
+  32:	00 00       	nop
+  34:	33 c0       	rjmp	.+102    	; 0x9c <__bad_interrupt>
+  36:	00 00       	nop
+  38:	31 c0       	rjmp	.+98     	; 0x9c <__bad_interrupt>
+  3a:	00 00       	nop
+  3c:	2f c0       	rjmp	.+94     	; 0x9c <__bad_interrupt>
+  3e:	00 00       	nop
+  40:	2d c0       	rjmp	.+90     	; 0x9c <__bad_interrupt>
+  42:	00 00       	nop
+  44:	2b c0       	rjmp	.+86     	; 0x9c <__bad_interrupt>
+  46:	00 00       	nop
+  48:	29 c0       	rjmp	.+82     	; 0x9c <__bad_interrupt>
+  4a:	00 00       	nop
+  4c:	27 c0       	rjmp	.+78     	; 0x9c <__bad_interrupt>
+  4e:	00 00       	nop
+  50:	25 c0       	rjmp	.+74     	; 0x9c <__bad_interrupt>
+  52:	00 00       	nop
+  54:	23 c0       	rjmp	.+70     	; 0x9c <__bad_interrupt>
+  56:	00 00       	nop
+  58:	21 c0       	rjmp	.+66     	; 0x9c <__bad_interrupt>
+  5a:	00 00       	nop
+  5c:	1f c0       	rjmp	.+62     	; 0x9c <__bad_interrupt>
+  5e:	00 00       	nop
+  60:	1d c0       	rjmp	.+58     	; 0x9c <__bad_interrupt>
+  62:	00 00       	nop
+  64:	1b c0       	rjmp	.+54     	; 0x9c <__bad_interrupt>
+  66:	00 00       	nop
+  68:	19 c0       	rjmp	.+50     	; 0x9c <__bad_interrupt>
+  6a:	00 00       	nop
+  6c:	17 c0       	rjmp	.+46     	; 0x9c <__bad_interrupt>
+  6e:	00 00       	nop
+  70:	15 c0       	rjmp	.+42     	; 0x9c <__bad_interrupt>
+  72:	00 00       	nop
+  74:	13 c0       	rjmp	.+38     	; 0x9c <__bad_interrupt>
+  76:	00 00       	nop
+  78:	11 c0       	rjmp	.+34     	; 0x9c <__bad_interrupt>
+  7a:	00 00       	nop
+  7c:	0f c0       	rjmp	.+30     	; 0x9c <__bad_interrupt>
+  7e:	00 00       	nop
+  80:	0d c0       	rjmp	.+26     	; 0x9c <__bad_interrupt>
+  82:	00 00       	nop
+  84:	0b c0       	rjmp	.+22     	; 0x9c <__bad_interrupt>
+  86:	00 00       	nop
+  88:	09 c0       	rjmp	.+18     	; 0x9c <__bad_interrupt>
+	...
+
+0000008c <__ctors_end>:
+  8c:	11 24       	eor	r1, r1
+  8e:	1f be       	out	0x3f, r1	; 63
+  90:	cf ef       	ldi	r28, 0xFF	; 255
+  92:	d0 e1       	ldi	r29, 0x10	; 16
+  94:	de bf       	out	0x3e, r29	; 62
+  96:	cd bf       	out	0x3d, r28	; 61
+  98:	dd d0       	rcall	.+442    	; 0x254 <main>
+  9a:	08 c1       	rjmp	.+528    	; 0x2ac <_exit>
+
+0000009c <__bad_interrupt>:
+  9c:	b1 cf       	rjmp	.-158    	; 0x0 <__vectors>
+
+0000009e <ReadFlashByte>:
+
+/*
+* The function Returns one byte located on Flash address given by ucFlashStartAdr.
+*/
+unsigned char ReadFlashByte(MyAddressType flashStartAdr)
+{
+  9e:	cf 93       	push	r28
+  a0:	df 93       	push	r29
+  a2:	00 d0       	rcall	.+0      	; 0xa4 <ReadFlashByte+0x6>
+  a4:	cd b7       	in	r28, 0x3d	; 61
+  a6:	de b7       	in	r29, 0x3e	; 62
+  a8:	9a 83       	std	Y+2, r25	; 0x02
+  aa:	89 83       	std	Y+1, r24	; 0x01
+    return (unsigned char)*((MyFlashCharPointer)flashStartAdr);
+  ac:	e9 81       	ldd	r30, Y+1	; 0x01
+  ae:	fa 81       	ldd	r31, Y+2	; 0x02
+}  // Returns data from Flash
+  b0:	84 91       	lpm	r24, Z
+  b2:	0f 90       	pop	r0
+  b4:	0f 90       	pop	r0
+  b6:	df 91       	pop	r29
+  b8:	cf 91       	pop	r28
+  ba:	08 95       	ret
+
+000000bc <ReadFlashPage>:
+* in array dataPage[]. The number of bytes stored is depending upon the
+* Flash page size. The function returns FALSE if input address is not a Flash
+* page address, else TRUE.
+**/
+unsigned char ReadFlashPage(MyAddressType flashStartAdr, unsigned char *dataPage)
+{
+  bc:	cf 93       	push	r28
+  be:	df 93       	push	r29
+  c0:	00 d0       	rcall	.+0      	; 0xc2 <ReadFlashPage+0x6>
+  c2:	cd b7       	in	r28, 0x3d	; 61
+  c4:	de b7       	in	r29, 0x3e	; 62
+  c6:	9a 83       	std	Y+2, r25	; 0x02
+  c8:	89 83       	std	Y+1, r24	; 0x01
+	unsigned int index;
+    if(!(flashStartAdr & (PAGESIZE-1)))
+  ca:	89 81       	ldd	r24, Y+1	; 0x01
+  cc:	9a 81       	ldd	r25, Y+2	; 0x02
+  ce:	81 11       	cpse	r24, r1
+  d0:	10 c0       	rjmp	.+32     	; 0xf2 <ReadFlashPage+0x36>
+  d2:	db 01       	movw	r26, r22
+  d4:	80 e0       	ldi	r24, 0x00	; 0
+  d6:	90 e0       	ldi	r25, 0x00	; 0
+	{                                       // If input address is a page address
+		for(index = 0; index < PAGESIZE; index++)
+		{
+			dataPage[index] = ReadFlashByte(flashStartAdr + index);
+  d8:	e9 81       	ldd	r30, Y+1	; 0x01
+  da:	fa 81       	ldd	r31, Y+2	; 0x02
+  dc:	e8 0f       	add	r30, r24
+  de:	f9 1f       	adc	r31, r25
+/*
+* The function Returns one byte located on Flash address given by ucFlashStartAdr.
+*/
+unsigned char ReadFlashByte(MyAddressType flashStartAdr)
+{
+    return (unsigned char)*((MyFlashCharPointer)flashStartAdr);
+  e0:	24 91       	lpm	r18, Z
+	unsigned int index;
+    if(!(flashStartAdr & (PAGESIZE-1)))
+	{                                       // If input address is a page address
+		for(index = 0; index < PAGESIZE; index++)
+		{
+			dataPage[index] = ReadFlashByte(flashStartAdr + index);
+  e2:	2d 93       	st	X+, r18
+unsigned char ReadFlashPage(MyAddressType flashStartAdr, unsigned char *dataPage)
+{
+	unsigned int index;
+    if(!(flashStartAdr & (PAGESIZE-1)))
+	{                                       // If input address is a page address
+		for(index = 0; index < PAGESIZE; index++)
+  e4:	01 96       	adiw	r24, 0x01	; 1
+  e6:	81 15       	cp	r24, r1
+  e8:	21 e0       	ldi	r18, 0x01	; 1
+  ea:	92 07       	cpc	r25, r18
+  ec:	a9 f7       	brne	.-22     	; 0xd8 <ReadFlashPage+0x1c>
+		{
+			dataPage[index] = ReadFlashByte(flashStartAdr + index);
+		}
+		return TRUE;                            // Return TRUE if valid page address
+  ee:	81 e0       	ldi	r24, 0x01	; 1
+  f0:	01 c0       	rjmp	.+2      	; 0xf4 <ReadFlashPage+0x38>
+    }
+    else
+	{
+		return FALSE;                           // Return FALSE if not valid page address
+  f2:	80 e0       	ldi	r24, 0x00	; 0
+    }
+}
+  f4:	0f 90       	pop	r0
+  f6:	0f 90       	pop	r0
+  f8:	df 91       	pop	r29
+  fa:	cf 91       	pop	r28
+  fc:	08 95       	ret
+
+000000fe <AddressCheck>:
+* - Address is not equal to page address used for buffering by the Flash recovery
+*   functions (if enabled).
+* Returns FALSE else.
+*/
+unsigned char AddressCheck(MyAddressType flashAdr)
+{
+  fe:	cf 93       	push	r28
+ 100:	df 93       	push	r29
+ 102:	00 d0       	rcall	.+0      	; 0x104 <AddressCheck+0x6>
+ 104:	cd b7       	in	r28, 0x3d	; 61
+ 106:	de b7       	in	r29, 0x3e	; 62
+ 108:	9a 83       	std	Y+2, r25	; 0x02
+ 10a:	89 83       	std	Y+1, r24	; 0x01
+	#ifdef __FLASH_RECOVER
+ //The next line gives a warning 'pointless comparison with zero' if ADR_LIMIT_LOW is 0. Ignore it.
+    if( (flashAdr >= ADR_LIMIT_LOW) && (flashAdr <= ADR_LIMIT_HIGH) &&
+ 10c:	89 81       	ldd	r24, Y+1	; 0x01
+ 10e:	9a 81       	ldd	r25, Y+2	; 0x02
+ 110:	89 81       	ldd	r24, Y+1	; 0x01
+ 112:	9a 81       	ldd	r25, Y+2	; 0x02
+    (flashAdr != ADR_FLASH_BUFFER) && !(flashAdr & (PAGESIZE-1)) )
+ 114:	89 81       	ldd	r24, Y+1	; 0x01
+ 116:	9a 81       	ldd	r25, Y+2	; 0x02
+*/
+unsigned char AddressCheck(MyAddressType flashAdr)
+{
+	#ifdef __FLASH_RECOVER
+ //The next line gives a warning 'pointless comparison with zero' if ADR_LIMIT_LOW is 0. Ignore it.
+    if( (flashAdr >= ADR_LIMIT_LOW) && (flashAdr <= ADR_LIMIT_HIGH) &&
+ 118:	81 15       	cp	r24, r1
+ 11a:	9f 4e       	sbci	r25, 0xEF	; 239
+ 11c:	21 f0       	breq	.+8      	; 0x126 <AddressCheck+0x28>
+    (flashAdr != ADR_FLASH_BUFFER) && !(flashAdr & (PAGESIZE-1)) )
+ 11e:	29 81       	ldd	r18, Y+1	; 0x01
+ 120:	3a 81       	ldd	r19, Y+2	; 0x02
+		return TRUE;                            // Address is a valid page address
+ 122:	81 e0       	ldi	r24, 0x01	; 1
+ 124:	21 11       	cpse	r18, r1
+    else
+		return FALSE;                           // Address is not a valid page address
+ 126:	80 e0       	ldi	r24, 0x00	; 0
+    if((flashAdr >= ADR_LIMIT_LOW) && (flashAdr <= ADR_LIMIT_HIGH) && !(flashAdr & (PAGESIZE-1) ) )
+		return TRUE;                            // Address is a valid page address
+    else
+		return FALSE;                           // Address is not a valid page address
+    #endif
+}
+ 128:	0f 90       	pop	r0
+ 12a:	0f 90       	pop	r0
+ 12c:	df 91       	pop	r29
+ 12e:	cf 91       	pop	r28
+ 130:	08 95       	ret
+
+00000132 <WriteFlashByte>:
+* The function writes byte data to Flash address flashAddr. Returns FALSE if
+* input address is not valid Flash byte address for writing, else TRUE.
+**/
+
+unsigned char WriteFlashByte(MyAddressType flashAddr, unsigned char data)
+{
+ 132:	0f 93       	push	r16
+ 134:	1f 93       	push	r17
+ 136:	cf 93       	push	r28
+ 138:	df 93       	push	r29
+ 13a:	00 d0       	rcall	.+0      	; 0x13c <WriteFlashByte+0xa>
+ 13c:	00 d0       	rcall	.+0      	; 0x13e <WriteFlashByte+0xc>
+ 13e:	cd b7       	in	r28, 0x3d	; 61
+ 140:	de b7       	in	r29, 0x3e	; 62
+ 142:	9c 83       	std	Y+4, r25	; 0x04
+ 144:	8b 83       	std	Y+3, r24	; 0x03
+ 146:	06 2f       	mov	r16, r22
+	MyAddressType  pageAdr;
+    unsigned char eepromInterruptSettings;
+    if( AddressCheck( flashAddr & ~(PAGESIZE-1) ))
+ 148:	8b 81       	ldd	r24, Y+3	; 0x03
+ 14a:	9c 81       	ldd	r25, Y+4	; 0x04
+ 14c:	88 27       	eor	r24, r24
+ 14e:	d7 df       	rcall	.-82     	; 0xfe <AddressCheck>
+ 150:	88 23       	and	r24, r24
+ 152:	a1 f1       	breq	.+104    	; 0x1bc <WriteFlashByte+0x8a>
+	{
+		eepromInterruptSettings= EECR & (1<<EERIE); // Stores EEPROM interrupt mask
+ 154:	8c b3       	in	r24, 0x1c	; 28
+ 156:	18 2f       	mov	r17, r24
+ 158:	18 70       	andi	r17, 0x08	; 8
+        EECR &= ~(1<<EERIE);                        // Disable EEPROM interrupt
+ 15a:	e3 98       	cbi	0x1c, 3	; 28
+		while(EECR & (1<<EEPROM_program_enable));   // Wait if ongoing EEPROM write
+ 15c:	e1 99       	sbic	0x1c, 1	; 28
+ 15e:	fe cf       	rjmp	.-4      	; 0x15c <WriteFlashByte+0x2a>
+
+		pageAdr=flashAddr & ~(PAGESIZE-1);          // Gets Flash page address from byte address
+ 160:	8b 81       	ldd	r24, Y+3	; 0x03
+ 162:	9c 81       	ldd	r25, Y+4	; 0x04
+ 164:	88 27       	eor	r24, r24
+ 166:	9a 83       	std	Y+2, r25	; 0x02
+ 168:	89 83       	std	Y+1, r24	; 0x01
+
+		#ifdef __FLASH_RECOVER
+		FlashBackup.status=0;    // Indicate that Flash buffer does not contain data for writing
+ 16a:	10 92 02 00 	sts	0x0002, r1	; 0x800002 <__TEXT_REGION_LENGTH__+0x7e0002>
+		while(EECR & (1<<EEPROM_program_enable));
+ 16e:	e1 99       	sbic	0x1c, 1	; 28
+ 170:	fe cf       	rjmp	.-4      	; 0x16e <WriteFlashByte+0x3c>
+		LpmReplaceSpm(flashAddr, data);         // Fills Flash write buffer
+ 172:	8b 81       	ldd	r24, Y+3	; 0x03
+ 174:	9c 81       	ldd	r25, Y+4	; 0x04
+ 176:	60 2f       	mov	r22, r16
+ 178:	0e 94 5b f0 	call	0x1e0b6	; 0x1e0b6 <LpmReplaceSpm>
+		WriteBufToFlash(ADR_FLASH_BUFFER);      // Writes to Flash recovery buffer
+ 17c:	80 e0       	ldi	r24, 0x00	; 0
+ 17e:	9f ee       	ldi	r25, 0xEF	; 239
+ 180:	0e 94 00 f0 	call	0x1e000	; 0x1e000 <WriteBufToFlash>
+		FlashBackup.pageNumber = (unsigned int) (pageAdr/PAGESIZE); //Stores page address of data
+ 184:	89 81       	ldd	r24, Y+1	; 0x01
+ 186:	9a 81       	ldd	r25, Y+2	; 0x02
+ 188:	90 93 00 00 	sts	0x0000, r25	; 0x800000 <__TEXT_REGION_LENGTH__+0x7e0000>
+ 18c:	10 92 01 00 	sts	0x0001, r1	; 0x800001 <__TEXT_REGION_LENGTH__+0x7e0001>
+		FlashBackup.status = FLASH_BUFFER_FULL_ID; // Indicates that Flash recovery buffer
+ 190:	8a ea       	ldi	r24, 0xAA	; 170
+ 192:	80 93 02 00 	sts	0x0002, r24	; 0x800002 <__TEXT_REGION_LENGTH__+0x7e0002>
+                                               // contains unwritten data
+		while(EECR & (1<<EEPROM_program_enable));
+ 196:	e1 99       	sbic	0x1c, 1	; 28
+ 198:	fe cf       	rjmp	.-4      	; 0x196 <WriteFlashByte+0x64>
+		#endif
+    LpmReplaceSpm(flashAddr, data);         // Fills Flash write buffer
+ 19a:	8b 81       	ldd	r24, Y+3	; 0x03
+ 19c:	9c 81       	ldd	r25, Y+4	; 0x04
+ 19e:	60 2f       	mov	r22, r16
+ 1a0:	0e 94 5b f0 	call	0x1e0b6	; 0x1e0b6 <LpmReplaceSpm>
+	WriteBufToFlash(pageAdr);               // Writes to Flash
+ 1a4:	89 81       	ldd	r24, Y+1	; 0x01
+ 1a6:	9a 81       	ldd	r25, Y+2	; 0x02
+ 1a8:	0e 94 00 f0 	call	0x1e000	; 0x1e000 <WriteBufToFlash>
+
+    #ifdef __FLASH_RECOVER
+	FlashBackup.status = 0;//Indicates that Flash recovery buffer does not contain unwritten data
+ 1ac:	10 92 02 00 	sts	0x0002, r1	; 0x800002 <__TEXT_REGION_LENGTH__+0x7e0002>
+                                           
+		while(EECR & (1<<EEPROM_program_enable));
+ 1b0:	e1 99       	sbic	0x1c, 1	; 28
+ 1b2:	fe cf       	rjmp	.-4      	; 0x1b0 <WriteFlashByte+0x7e>
+    #endif
+
+		EECR |= eepromInterruptSettings;        // Restore EEPROM interrupt mask
+ 1b4:	8c b3       	in	r24, 0x1c	; 28
+ 1b6:	81 2b       	or	r24, r17
+ 1b8:	8c bb       	out	0x1c, r24	; 28
+		return TRUE;                            // Return TRUE if address valid for writing
+ 1ba:	81 e0       	ldi	r24, 0x01	; 1
+	}
+  else
+    return FALSE;                           // Return FALSE if address not valid for writing
+}
+ 1bc:	0f 90       	pop	r0
+ 1be:	0f 90       	pop	r0
+ 1c0:	0f 90       	pop	r0
+ 1c2:	0f 90       	pop	r0
+ 1c4:	df 91       	pop	r29
+ 1c6:	cf 91       	pop	r28
+ 1c8:	1f 91       	pop	r17
+ 1ca:	0f 91       	pop	r16
+ 1cc:	08 95       	ret
+
+000001ce <WriteFlashPage>:
+* page address for writing, else TRUE.
+*/
+
+
+unsigned char WriteFlashPage(MyAddressType flashStartAdr, unsigned char *dataPage)
+{
+ 1ce:	ef 92       	push	r14
+ 1d0:	ff 92       	push	r15
+ 1d2:	1f 93       	push	r17
+ 1d4:	cf 93       	push	r28
+ 1d6:	df 93       	push	r29
+ 1d8:	00 d0       	rcall	.+0      	; 0x1da <WriteFlashPage+0xc>
+ 1da:	cd b7       	in	r28, 0x3d	; 61
+ 1dc:	de b7       	in	r29, 0x3e	; 62
+ 1de:	9a 83       	std	Y+2, r25	; 0x02
+ 1e0:	89 83       	std	Y+1, r24	; 0x01
+ 1e2:	7b 01       	movw	r14, r22
+   unsigned char eepromInterruptSettings;
+    if( AddressCheck(flashStartAdr) )
+ 1e4:	89 81       	ldd	r24, Y+1	; 0x01
+ 1e6:	9a 81       	ldd	r25, Y+2	; 0x02
+ 1e8:	8a df       	rcall	.-236    	; 0xfe <AddressCheck>
+ 1ea:	88 23       	and	r24, r24
+ 1ec:	59 f1       	breq	.+86     	; 0x244 <WriteFlashPage+0x76>
+	{
+		eepromInterruptSettings = EECR & (1<<EERIE);   // Stores EEPROM interrupt mask
+ 1ee:	8c b3       	in	r24, 0x1c	; 28
+ 1f0:	18 2f       	mov	r17, r24
+ 1f2:	18 70       	andi	r17, 0x08	; 8
+		EECR &= ~(1<<EERIE);                           // Disable EEPROM interrupt
+ 1f4:	e3 98       	cbi	0x1c, 3	; 28
+		while(EECR & (1<<EEPROM_program_enable));      // Wait if ongoing EEPROM write
+ 1f6:	e1 99       	sbic	0x1c, 1	; 28
+ 1f8:	fe cf       	rjmp	.-4      	; 0x1f6 <WriteFlashPage+0x28>
+
+		#ifdef __FLASH_RECOVER
+		FlashBackup.status=0;       // Indicate that Flash buffer does not contain data for writing
+ 1fa:	10 92 02 00 	sts	0x0002, r1	; 0x800002 <__TEXT_REGION_LENGTH__+0x7e0002>
+		while(EECR & (1<<EEPROM_program_enable));
+ 1fe:	e1 99       	sbic	0x1c, 1	; 28
+ 200:	fe cf       	rjmp	.-4      	; 0x1fe <WriteFlashPage+0x30>
+		FillBuffer(dataPage);
+ 202:	c7 01       	movw	r24, r14
+ 204:	0e 94 b1 f0 	call	0x1e162	; 0x1e162 <FillBuffer>
+		WriteBufToFlash(ADR_FLASH_BUFFER);      // Writes to Flash recovery buffer
+ 208:	80 e0       	ldi	r24, 0x00	; 0
+ 20a:	9f ee       	ldi	r25, 0xEF	; 239
+ 20c:	0e 94 00 f0 	call	0x1e000	; 0x1e000 <WriteBufToFlash>
+		FlashBackup.pageNumber=(unsigned int)(flashStartAdr/PAGESIZE);
+ 210:	89 81       	ldd	r24, Y+1	; 0x01
+ 212:	9a 81       	ldd	r25, Y+2	; 0x02
+ 214:	90 93 00 00 	sts	0x0000, r25	; 0x800000 <__TEXT_REGION_LENGTH__+0x7e0000>
+ 218:	10 92 01 00 	sts	0x0001, r1	; 0x800001 <__TEXT_REGION_LENGTH__+0x7e0001>
+		/* Indicates that Flash recovery buffer contains unwritten data */
+		FlashBackup.status = FLASH_BUFFER_FULL_ID;
+ 21c:	8a ea       	ldi	r24, 0xAA	; 170
+ 21e:	80 93 02 00 	sts	0x0002, r24	; 0x800002 <__TEXT_REGION_LENGTH__+0x7e0002>
+		while(EECR & (1<<EEPROM_program_enable));
+ 222:	e1 99       	sbic	0x1c, 1	; 28
+ 224:	fe cf       	rjmp	.-4      	; 0x222 <WriteFlashPage+0x54>
+		#endif
+		FillBuffer(dataPage);
+ 226:	c7 01       	movw	r24, r14
+ 228:	0e 94 b1 f0 	call	0x1e162	; 0x1e162 <FillBuffer>
+		WriteBufToFlash(flashStartAdr);         // Writes to Flash
+ 22c:	89 81       	ldd	r24, Y+1	; 0x01
+ 22e:	9a 81       	ldd	r25, Y+2	; 0x02
+ 230:	0e 94 00 f0 	call	0x1e000	; 0x1e000 <WriteBufToFlash>
+		#ifdef __FLASH_RECOVER
+        FlashBackup.status=0;    // Indicate that Flash buffer does not contain data for writing
+ 234:	10 92 02 00 	sts	0x0002, r1	; 0x800002 <__TEXT_REGION_LENGTH__+0x7e0002>
+        while(EECR & (1<<EEPROM_program_enable));
+ 238:	e1 99       	sbic	0x1c, 1	; 28
+ 23a:	fe cf       	rjmp	.-4      	; 0x238 <WriteFlashPage+0x6a>
+		#endif
+
+		EECR |= eepromInterruptSettings;        // Restore EEPROM interrupt mask
+ 23c:	8c b3       	in	r24, 0x1c	; 28
+ 23e:	81 2b       	or	r24, r17
+ 240:	8c bb       	out	0x1c, r24	; 28
+		return TRUE;                            // Return TRUE if address
+ 242:	81 e0       	ldi	r24, 0x01	; 1
+                                            // valid for writing
+     }
+  else
+    return FALSE;                           // Return FALSE if not address not
+                                            // valid for writing
+}
+ 244:	0f 90       	pop	r0
+ 246:	0f 90       	pop	r0
+ 248:	df 91       	pop	r29
+ 24a:	cf 91       	pop	r28
+ 24c:	1f 91       	pop	r17
+ 24e:	ff 90       	pop	r15
+ 250:	ef 90       	pop	r14
+ 252:	08 95       	ret
+
+00000254 <main>:
+#include "Self_programming.h"
+#include "flash.h"
+#include <avr/pgmspace.h>
+
+ int main( void )
+{
+ 254:	cf 93       	push	r28
+ 256:	df 93       	push	r29
+ 258:	cd b7       	in	r28, 0x3d	; 61
+ 25a:	de b7       	in	r29, 0x3e	; 62
+ 25c:	d2 50       	subi	r29, 0x02	; 2
+ 25e:	0f b6       	in	r0, 0x3f	; 63
+ 260:	f8 94       	cli
+ 262:	de bf       	out	0x3e, r29	; 62
+ 264:	0f be       	out	0x3f, r0	; 63
+ 266:	cd bf       	out	0x3d, r28	; 61
+	unsigned char testBuffer1[PAGESIZE];    // Declares variables for testing
+	unsigned char testBuffer2[PAGESIZE];    // Note. Each array uses PAGESIZE bytes of
+										    // code stack
+    static unsigned char testChar; //A warning says that the var is set but never used.Ignore it.
+    int index;
+    RecoverFlash();
+ 268:	0e 94 2e f0 	call	0x1e05c	; 0x1e05c <RecoverFlash>
+ 26c:	fe 01       	movw	r30, r28
+ 26e:	ef 5f       	subi	r30, 0xFF	; 255
+ 270:	fe 4f       	sbci	r31, 0xFE	; 254
+    for(index=0; index<PAGESIZE; index++)
+ 272:	80 e0       	ldi	r24, 0x00	; 0
+ 274:	90 e0       	ldi	r25, 0x00	; 0
+ 276:	8f 01       	movw	r16, r30
+	{
+		testBuffer1[index]=(unsigned char)index; // Fills testBuffer1 with values 0,1,2..255
+ 278:	81 93       	st	Z+, r24
+	unsigned char testBuffer2[PAGESIZE];    // Note. Each array uses PAGESIZE bytes of
+										    // code stack
+    static unsigned char testChar; //A warning says that the var is set but never used.Ignore it.
+    int index;
+    RecoverFlash();
+    for(index=0; index<PAGESIZE; index++)
+ 27a:	01 96       	adiw	r24, 0x01	; 1
+ 27c:	81 15       	cp	r24, r1
+ 27e:	21 e0       	ldi	r18, 0x01	; 1
+ 280:	92 07       	cpc	r25, r18
+ 282:	d1 f7       	brne	.-12     	; 0x278 <main+0x24>
+		testBuffer1[index]=(unsigned char)index; // Fills testBuffer1 with values 0,1,2..255
+	}
+   
+    for(;;)
+	{
+		cli();
+ 284:	f8 94       	cli
+		WriteFlashPage(0x2000, testBuffer1);    // Writes testbuffer1 to Flash page 2
+ 286:	b8 01       	movw	r22, r16
+ 288:	80 e0       	ldi	r24, 0x00	; 0
+ 28a:	90 e2       	ldi	r25, 0x20	; 32
+ 28c:	a0 df       	rcall	.-192    	; 0x1ce <WriteFlashPage>
+												// Function returns TRUE		
+		ReadFlashPage(0x2000, testBuffer2);     // Reads back Flash page 2 to TestBuffer2
+ 28e:	be 01       	movw	r22, r28
+ 290:	6f 5f       	subi	r22, 0xFF	; 255
+ 292:	7f 4f       	sbci	r23, 0xFF	; 255
+ 294:	80 e0       	ldi	r24, 0x00	; 0
+ 296:	90 e2       	ldi	r25, 0x20	; 32
+ 298:	11 df       	rcall	.-478    	; 0xbc <ReadFlashPage>
+												// Function returns TRUE
+   
+		WriteFlashByte(0x2004, 0x38);            // Writes 0x38 to byte address 0x204
+ 29a:	68 e3       	ldi	r22, 0x38	; 56
+ 29c:	84 e0       	ldi	r24, 0x04	; 4
+ 29e:	90 e2       	ldi	r25, 0x20	; 32
+ 2a0:	48 df       	rcall	.-368    	; 0x132 <WriteFlashByte>
+												 // Same as byte 4 on page 2
+												 // Returns TRUE
+		testChar = ReadFlashByte(0x2004);        // Reads back value from address 0x204
+ 2a2:	84 e0       	ldi	r24, 0x04	; 4
+ 2a4:	90 e2       	ldi	r25, 0x20	; 32
+ 2a6:	fb de       	rcall	.-522    	; 0x9e <ReadFlashByte>
+ 2a8:	00 00       	nop
+	
+		asm("nop");
+ 2aa:	ec cf       	rjmp	.-40     	; 0x284 <main+0x30>
+
+000002ac <_exit>:
+ 2ac:	f8 94       	cli
+
+000002ae <__stop_program>:
+ 2ae:	ff cf       	rjmp	.-2      	; 0x2ae <__stop_program>
