@@ -3,29 +3,29 @@ GrafiskDisplayDriver.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .data         00000000  00800200  00800200  000003ca  2**0
+  0 .data         00000000  00800200  00800200  0000039e  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  1 .text         00000376  00000000  00000000  00000054  2**1
+  1 .text         0000034a  00000000  00000000  00000054  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .comment      00000030  00000000  00000000  000003ca  2**0
+  2 .comment      00000030  00000000  00000000  0000039e  2**0
                   CONTENTS, READONLY
-  3 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  000003fc  2**2
+  3 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  000003d0  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 000000a0  00000000  00000000  0000043c  2**0
+  4 .debug_aranges 000000b8  00000000  00000000  00000410  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   0000159c  00000000  00000000  000004dc  2**0
+  5 .debug_info   00001613  00000000  00000000  000004c8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 00000e18  00000000  00000000  00001a78  2**0
+  6 .debug_abbrev 00000e5e  00000000  00000000  00001adb  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   000006c6  00000000  00000000  00002890  2**0
+  7 .debug_line   0000073a  00000000  00000000  00002939  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  00000178  00000000  00000000  00002f58  2**2
+  8 .debug_frame  000001cc  00000000  00000000  00003074  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    000006d7  00000000  00000000  000030d0  2**0
+  9 .debug_str    00000714  00000000  00000000  00003240  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    00000542  00000000  00000000  000037a7  2**0
+ 10 .debug_loc    000006a4  00000000  00000000  00003954  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 00000080  00000000  00000000  00003ce9  2**0
+ 11 .debug_ranges 00000098  00000000  00000000  00003ff8  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -155,553 +155,497 @@ Disassembly of section .text:
   ee:	cd bf       	out	0x3d, r28	; 61
   f0:	00 e0       	ldi	r16, 0x00	; 0
   f2:	0c bf       	out	0x3c, r16	; 60
-  f4:	f0 d0       	rcall	.+480    	; 0x2d6 <main>
-  f6:	3d c1       	rjmp	.+634    	; 0x372 <_exit>
+  f4:	ec d0       	rcall	.+472    	; 0x2ce <main>
+  f6:	27 c1       	rjmp	.+590    	; 0x346 <_exit>
 
 000000f8 <__bad_interrupt>:
   f8:	83 cf       	rjmp	.-250    	; 0x0 <__vectors>
 
 000000fa <WriteCommand>:
-static void WriteCommand(unsigned int command)
-{
-	uint8_t bit = 0b00000001;
-	
-	//Set command
-	DATA_PORT_HIGH = (uint8_t)(command>>8);
-  fa:	92 b9       	out	0x02, r25	; 2
-	DATA_PORT_LOW = (uint8_t)(command&(0x00FF));
-  fc:	88 b9       	out	0x08, r24	; 8
-	
-	DC_PORT &= ~(bit<<DC_BIT); //Trigger falling edge, no waiting because other controller is faster than us.
-  fe:	5f 98       	cbi	0x0b, 7	; 11
-	CS_PORT &= ~(bit<<CS_BIT);
- 100:	a1 98       	cbi	0x14, 1	; 20
-	
-	//Write pulse
-	WR_PORT &= ~(bit<<WR_BIT); //WRX low
- 102:	a2 98       	cbi	0x14, 2	; 20
-	WR_PORT |= bit<<WR_BIT; //WRX high triggers read signal
- 104:	a2 9a       	sbi	0x14, 2	; 20
-	
-	CS_PORT |= bit<<CS_BIT; //CS set high
- 106:	a1 9a       	sbi	0x14, 1	; 20
-	WR_PORT &= ~(bit<<WR_BIT); //WRX low
- 108:	a2 98       	cbi	0x14, 2	; 20
- 10a:	08 95       	ret
-
-0000010c <WriteData>:
-static void WriteData(unsigned int data)
-{
-	uint8_t bit = 0b00000001;
-		
-	//Set data
-	DATA_PORT_HIGH = (uint8_t)(data>>8);
- 10c:	92 b9       	out	0x02, r25	; 2
-	DATA_PORT_LOW = (uint8_t)(data&(0x00FF));
- 10e:	88 b9       	out	0x08, r24	; 8
-		
-	DC_PORT |= bit<<DC_BIT; //Trigger rising edge, no waiting because other controller is faster than us.
- 110:	5f 9a       	sbi	0x0b, 7	; 11
-	CS_PORT &= ~(bit<<CS_BIT); // Chip select active low, trigger falling edge
- 112:	a1 98       	cbi	0x14, 1	; 20
-		
-	//Write pulse
-	WR_PORT &= ~(bit<<WR_BIT);
- 114:	a2 98       	cbi	0x14, 2	; 20
-	WR_PORT |= bit<<WR_BIT;
- 116:	a2 9a       	sbi	0x14, 2	; 20
-		
-	CS_PORT |= bit<<CS_BIT; //CS set high
- 118:	a1 9a       	sbi	0x14, 1	; 20
-	WR_PORT &= ~(bit<<WR_BIT);
- 11a:	a2 98       	cbi	0x14, 2	; 20
- 11c:	08 95       	ret
-
-0000011e <DisplayOff>:
 }
 
 void DisplayOff()
 {
 	uint16_t command = 0b00101000;
 	WriteCommand(command);
- 11e:	88 e2       	ldi	r24, 0x28	; 40
- 120:	90 e0       	ldi	r25, 0x00	; 0
- 122:	eb cf       	rjmp	.-42     	; 0xfa <WriteCommand>
- 124:	08 95       	ret
+  fa:	92 b9       	out	0x02, r25	; 2
+  fc:	88 b9       	out	0x08, r24	; 8
+  fe:	5f 98       	cbi	0x0b, 7	; 11
+ 100:	a1 98       	cbi	0x14, 1	; 20
+ 102:	a2 98       	cbi	0x14, 2	; 20
+ 104:	a2 9a       	sbi	0x14, 2	; 20
+ 106:	a1 9a       	sbi	0x14, 1	; 20
+ 108:	a2 98       	cbi	0x14, 2	; 20
+ 10a:	08 95       	ret
 
-00000126 <DisplayOn>:
+0000010c <WriteData>:
+ 10c:	92 b9       	out	0x02, r25	; 2
+ 10e:	88 b9       	out	0x08, r24	; 8
+ 110:	5f 9a       	sbi	0x0b, 7	; 11
+ 112:	a1 98       	cbi	0x14, 1	; 20
+ 114:	a2 98       	cbi	0x14, 2	; 20
+ 116:	a2 9a       	sbi	0x14, 2	; 20
+ 118:	a1 9a       	sbi	0x14, 1	; 20
+ 11a:	a2 98       	cbi	0x14, 2	; 20
+ 11c:	08 95       	ret
+
+0000011e <DisplayOn>:
 }
 
 void DisplayOn()
 {
 	uint16_t command = 0b00101001;
 	WriteCommand(command);
- 126:	89 e2       	ldi	r24, 0x29	; 41
- 128:	90 e0       	ldi	r25, 0x00	; 0
- 12a:	e7 cf       	rjmp	.-50     	; 0xfa <WriteCommand>
- 12c:	08 95       	ret
+ 11e:	89 e2       	ldi	r24, 0x29	; 41
+ 120:	90 e0       	ldi	r25, 0x00	; 0
+ 122:	eb cf       	rjmp	.-42     	; 0xfa <WriteCommand>
+ 124:	08 95       	ret
 
-0000012e <SleepOut>:
+00000126 <SleepOut>:
 }
 
 void SleepOut()
 {
 	uint16_t command = 0b00010001;
 	WriteCommand(command);
- 12e:	81 e1       	ldi	r24, 0x11	; 17
- 130:	90 e0       	ldi	r25, 0x00	; 0
- 132:	e3 cf       	rjmp	.-58     	; 0xfa <WriteCommand>
- 134:	08 95       	ret
+ 126:	81 e1       	ldi	r24, 0x11	; 17
+ 128:	90 e0       	ldi	r25, 0x00	; 0
+ 12a:	e7 cf       	rjmp	.-50     	; 0xfa <WriteCommand>
+ 12c:	08 95       	ret
 
-00000136 <MemoryAccessControl>:
+0000012e <MemoryAccessControl>:
 	
 }
 
 void MemoryAccessControl(unsigned char parameter)
 {
- 136:	cf 93       	push	r28
- 138:	c8 2f       	mov	r28, r24
+ 12e:	cf 93       	push	r28
+ 130:	c8 2f       	mov	r28, r24
 	uint16_t command = 0b00110110;
 	WriteCommand(command);
- 13a:	86 e3       	ldi	r24, 0x36	; 54
- 13c:	90 e0       	ldi	r25, 0x00	; 0
- 13e:	dd df       	rcall	.-70     	; 0xfa <WriteCommand>
+ 132:	86 e3       	ldi	r24, 0x36	; 54
+ 134:	90 e0       	ldi	r25, 0x00	; 0
+ 136:	e1 df       	rcall	.-62     	; 0xfa <WriteCommand>
 	WriteData(parameter);
- 140:	8c 2f       	mov	r24, r28
- 142:	90 e0       	ldi	r25, 0x00	; 0
- 144:	e3 df       	rcall	.-58     	; 0x10c <WriteData>
+ 138:	8c 2f       	mov	r24, r28
+ 13a:	90 e0       	ldi	r25, 0x00	; 0
+ 13c:	e7 df       	rcall	.-50     	; 0x10c <WriteData>
 }
- 146:	cf 91       	pop	r28
- 148:	08 95       	ret
+ 13e:	cf 91       	pop	r28
+ 140:	08 95       	ret
 
-0000014a <InterfacePixelFormat>:
+00000142 <InterfacePixelFormat>:
 
 void InterfacePixelFormat(unsigned char parameter)
 {
- 14a:	cf 93       	push	r28
- 14c:	c8 2f       	mov	r28, r24
+ 142:	cf 93       	push	r28
+ 144:	c8 2f       	mov	r28, r24
 	uint16_t command = 0b00111010;
 	WriteCommand(command);
- 14e:	8a e3       	ldi	r24, 0x3A	; 58
- 150:	90 e0       	ldi	r25, 0x00	; 0
- 152:	d3 df       	rcall	.-90     	; 0xfa <WriteCommand>
+ 146:	8a e3       	ldi	r24, 0x3A	; 58
+ 148:	90 e0       	ldi	r25, 0x00	; 0
+ 14a:	d7 df       	rcall	.-82     	; 0xfa <WriteCommand>
 	WriteData(parameter);
- 154:	8c 2f       	mov	r24, r28
- 156:	90 e0       	ldi	r25, 0x00	; 0
- 158:	d9 df       	rcall	.-78     	; 0x10c <WriteData>
+ 14c:	8c 2f       	mov	r24, r28
+ 14e:	90 e0       	ldi	r25, 0x00	; 0
+ 150:	dd df       	rcall	.-70     	; 0x10c <WriteData>
 	
 }
- 15a:	cf 91       	pop	r28
- 15c:	08 95       	ret
+ 152:	cf 91       	pop	r28
+ 154:	08 95       	ret
 
-0000015e <DisplayInit>:
+00000156 <DisplayInit>:
 void DisplayInit()
 {
 	uint8_t bit = 0b00000001;
 	
 	//Set control bits to output
 	DDRG |= (bit<<CS_BIT)|(bit<<RST_BIT)|(bit<<WR_BIT);
- 15e:	83 b3       	in	r24, 0x13	; 19
- 160:	87 60       	ori	r24, 0x07	; 7
- 162:	83 bb       	out	0x13, r24	; 19
+ 156:	83 b3       	in	r24, 0x13	; 19
+ 158:	87 60       	ori	r24, 0x07	; 7
+ 15a:	83 bb       	out	0x13, r24	; 19
 	DDRD |= (bit<<DC_BIT);
- 164:	57 9a       	sbi	0x0a, 7	; 10
+ 15c:	57 9a       	sbi	0x0a, 7	; 10
 	
 	//Set data ports to output
 	DDRA |= 0xFF;
- 166:	81 b1       	in	r24, 0x01	; 1
- 168:	8f ef       	ldi	r24, 0xFF	; 255
- 16a:	81 b9       	out	0x01, r24	; 1
+ 15e:	81 b1       	in	r24, 0x01	; 1
+ 160:	8f ef       	ldi	r24, 0xFF	; 255
+ 162:	81 b9       	out	0x01, r24	; 1
 	DDRC |= 0xFF;
- 16c:	97 b1       	in	r25, 0x07	; 7
- 16e:	87 b9       	out	0x07, r24	; 7
+ 164:	97 b1       	in	r25, 0x07	; 7
+ 166:	87 b9       	out	0x07, r24	; 7
 	
 	// set control pins start position high
 	DC_PORT |= bit<<DC_BIT;
- 170:	5f 9a       	sbi	0x0b, 7	; 11
+ 168:	5f 9a       	sbi	0x0b, 7	; 11
 	WR_PORT |= bit<<WR_BIT;
- 172:	a2 9a       	sbi	0x14, 2	; 20
+ 16a:	a2 9a       	sbi	0x14, 2	; 20
 	CS_PORT	|= bit<<CS_BIT;
- 174:	a1 9a       	sbi	0x14, 1	; 20
+ 16c:	a1 9a       	sbi	0x14, 1	; 20
 	RST_PORT|= bit<<RST_BIT;
- 176:	a0 9a       	sbi	0x14, 0	; 20
+ 16e:	a0 9a       	sbi	0x14, 0	; 20
 	
 	//Reset grafik display
 	RST_PORT &= ~(bit<<RST_BIT);
- 178:	a0 98       	cbi	0x14, 0	; 20
+ 170:	a0 98       	cbi	0x14, 0	; 20
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- 17a:	2f ef       	ldi	r18, 0xFF	; 255
- 17c:	89 e6       	ldi	r24, 0x69	; 105
- 17e:	98 e1       	ldi	r25, 0x18	; 24
- 180:	21 50       	subi	r18, 0x01	; 1
- 182:	80 40       	sbci	r24, 0x00	; 0
- 184:	90 40       	sbci	r25, 0x00	; 0
- 186:	e1 f7       	brne	.-8      	; 0x180 <DisplayInit+0x22>
- 188:	00 c0       	rjmp	.+0      	; 0x18a <DisplayInit+0x2c>
- 18a:	00 00       	nop
+ 172:	2f ef       	ldi	r18, 0xFF	; 255
+ 174:	89 e6       	ldi	r24, 0x69	; 105
+ 176:	98 e1       	ldi	r25, 0x18	; 24
+ 178:	21 50       	subi	r18, 0x01	; 1
+ 17a:	80 40       	sbci	r24, 0x00	; 0
+ 17c:	90 40       	sbci	r25, 0x00	; 0
+ 17e:	e1 f7       	brne	.-8      	; 0x178 <DisplayInit+0x22>
+ 180:	00 c0       	rjmp	.+0      	; 0x182 <DisplayInit+0x2c>
+ 182:	00 00       	nop
 	_delay_ms(500);
 	RST_PORT|= bit<<RST_BIT;
- 18c:	a0 9a       	sbi	0x14, 0	; 20
- 18e:	2f ef       	ldi	r18, 0xFF	; 255
- 190:	88 e5       	ldi	r24, 0x58	; 88
- 192:	96 e0       	ldi	r25, 0x06	; 6
- 194:	21 50       	subi	r18, 0x01	; 1
- 196:	80 40       	sbci	r24, 0x00	; 0
- 198:	90 40       	sbci	r25, 0x00	; 0
- 19a:	e1 f7       	brne	.-8      	; 0x194 <DisplayInit+0x36>
- 19c:	00 c0       	rjmp	.+0      	; 0x19e <DisplayInit+0x40>
- 19e:	00 00       	nop
+ 184:	a0 9a       	sbi	0x14, 0	; 20
+ 186:	2f ef       	ldi	r18, 0xFF	; 255
+ 188:	88 e5       	ldi	r24, 0x58	; 88
+ 18a:	96 e0       	ldi	r25, 0x06	; 6
+ 18c:	21 50       	subi	r18, 0x01	; 1
+ 18e:	80 40       	sbci	r24, 0x00	; 0
+ 190:	90 40       	sbci	r25, 0x00	; 0
+ 192:	e1 f7       	brne	.-8      	; 0x18c <DisplayInit+0x36>
+ 194:	00 c0       	rjmp	.+0      	; 0x196 <DisplayInit+0x40>
+ 196:	00 00       	nop
 	_delay_ms(130);
 	
 	// Exit sleep mode
 	SleepOut();
- 1a0:	c6 df       	rcall	.-116    	; 0x12e <SleepOut>
+ 198:	c6 df       	rcall	.-116    	; 0x126 <SleepOut>
 	// Display on
 	DisplayOn();
- 1a2:	c1 df       	rcall	.-126    	; 0x126 <DisplayOn>
+ 19a:	c1 df       	rcall	.-126    	; 0x11e <DisplayOn>
 	// Set bit BGR (scanning direction)
 	MemoryAccessControl(0b00001000);
- 1a4:	88 e0       	ldi	r24, 0x08	; 8
- 1a6:	c7 df       	rcall	.-114    	; 0x136 <MemoryAccessControl>
+ 19c:	88 e0       	ldi	r24, 0x08	; 8
+ 19e:	c7 df       	rcall	.-114    	; 0x12e <MemoryAccessControl>
 	// 16 bits (2 bytes) per pixel
 	InterfacePixelFormat(0b00000101);
- 1a8:	85 e0       	ldi	r24, 0x05	; 5
- 1aa:	cf cf       	rjmp	.-98     	; 0x14a <InterfacePixelFormat>
- 1ac:	08 95       	ret
+ 1a0:	85 e0       	ldi	r24, 0x05	; 5
+ 1a2:	cf cf       	rjmp	.-98     	; 0x142 <InterfacePixelFormat>
+ 1a4:	08 95       	ret
 
-000001ae <MemoryWrite>:
- 1ae:	8c e2       	ldi	r24, 0x2C	; 44
+000001a6 <MemoryWrite>:
+ 1a6:	8c e2       	ldi	r24, 0x2C	; 44
 }
 
 void MemoryWrite()
 {
 	uint16_t command = 0b00101100;
 	WriteCommand(command);
- 1b0:	90 e0       	ldi	r25, 0x00	; 0
- 1b2:	a3 cf       	rjmp	.-186    	; 0xfa <WriteCommand>
- 1b4:	08 95       	ret
+ 1a8:	90 e0       	ldi	r25, 0x00	; 0
+ 1aa:	a7 cf       	rjmp	.-178    	; 0xfa <WriteCommand>
+ 1ac:	08 95       	ret
 
-000001b6 <WritePixel>:
+000001ae <WritePixel>:
 }
 
 static bool isDataOk(rgbData_t* data)
 {
 	return ((data->red < 32) && (data->blue < 32) && (data->green < 64));
- 1b6:	80 32       	cpi	r24, 0x20	; 32
- 1b8:	90 f4       	brcc	.+36     	; 0x1de <WritePixel+0x28>
- 1ba:	40 32       	cpi	r20, 0x20	; 32
- 1bc:	80 f4       	brcc	.+32     	; 0x1de <WritePixel+0x28>
- 1be:	60 34       	cpi	r22, 0x40	; 64
- 1c0:	70 f4       	brcc	.+28     	; 0x1de <WritePixel+0x28>
+ 1ae:	80 32       	cpi	r24, 0x20	; 32
+ 1b0:	90 f4       	brcc	.+36     	; 0x1d6 <WritePixel+0x28>
+ 1b2:	40 32       	cpi	r20, 0x20	; 32
+ 1b4:	80 f4       	brcc	.+32     	; 0x1d6 <WritePixel+0x28>
+ 1b6:	60 34       	cpi	r22, 0x40	; 64
+ 1b8:	70 f4       	brcc	.+28     	; 0x1d6 <WritePixel+0x28>
 
 static uint16_t rgbDataToInt(rgbData_t* data)
 {
 	uint16_t dataInt = 0;
-	dataInt |= data->blue;
-	dataInt |= data->green << 5;
- 1c2:	90 e2       	ldi	r25, 0x20	; 32
- 1c4:	69 9f       	mul	r22, r25
- 1c6:	b0 01       	movw	r22, r0
- 1c8:	11 24       	eor	r1, r1
- 1ca:	64 2b       	or	r22, r20
+	dataInt |= (uint16_t)data->blue;
+	dataInt |= ((uint16_t)data->green) << 5;
+ 1ba:	90 e2       	ldi	r25, 0x20	; 32
+ 1bc:	69 9f       	mul	r22, r25
+ 1be:	b0 01       	movw	r22, r0
+ 1c0:	11 24       	eor	r1, r1
+ 1c2:	64 2b       	or	r22, r20
 	data.green = Green;
 	data.blue = Blue;
 	
 	if(isDataOk(&data))
 	{
 		WriteData(rgbDataToInt(&data));
- 1cc:	90 e0       	ldi	r25, 0x00	; 0
- 1ce:	98 2f       	mov	r25, r24
- 1d0:	88 27       	eor	r24, r24
- 1d2:	99 0f       	add	r25, r25
- 1d4:	99 0f       	add	r25, r25
- 1d6:	99 0f       	add	r25, r25
- 1d8:	86 2b       	or	r24, r22
- 1da:	97 2b       	or	r25, r23
- 1dc:	97 cf       	rjmp	.-210    	; 0x10c <WriteData>
- 1de:	08 95       	ret
+ 1c4:	90 e0       	ldi	r25, 0x00	; 0
+ 1c6:	98 2f       	mov	r25, r24
+ 1c8:	88 27       	eor	r24, r24
+ 1ca:	99 0f       	add	r25, r25
+ 1cc:	99 0f       	add	r25, r25
+ 1ce:	99 0f       	add	r25, r25
+ 1d0:	86 2b       	or	r24, r22
+ 1d2:	97 2b       	or	r25, r23
+ 1d4:	9b cf       	rjmp	.-202    	; 0x10c <WriteData>
+ 1d6:	08 95       	ret
 
-000001e0 <SetColumnAddress>:
+000001d8 <SetColumnAddress>:
 	}
 }
 
 // Set Column Address (0-239), Start > End
 void SetColumnAddress(unsigned int Start, unsigned int End)
 {
- 1e0:	0f 93       	push	r16
- 1e2:	1f 93       	push	r17
- 1e4:	cf 93       	push	r28
- 1e6:	df 93       	push	r29
- 1e8:	08 2f       	mov	r16, r24
- 1ea:	d9 2f       	mov	r29, r25
- 1ec:	16 2f       	mov	r17, r22
- 1ee:	c7 2f       	mov	r28, r23
+ 1d8:	0f 93       	push	r16
+ 1da:	1f 93       	push	r17
+ 1dc:	cf 93       	push	r28
+ 1de:	df 93       	push	r29
+ 1e0:	08 2f       	mov	r16, r24
+ 1e2:	d9 2f       	mov	r29, r25
+ 1e4:	16 2f       	mov	r17, r22
+ 1e6:	c7 2f       	mov	r28, r23
 	uint16_t command = 0b00101010;
 	WriteCommand(command);
- 1f0:	8a e2       	ldi	r24, 0x2A	; 42
- 1f2:	90 e0       	ldi	r25, 0x00	; 0
- 1f4:	82 df       	rcall	.-252    	; 0xfa <WriteCommand>
+ 1e8:	8a e2       	ldi	r24, 0x2A	; 42
+ 1ea:	90 e0       	ldi	r25, 0x00	; 0
+ 1ec:	86 df       	rcall	.-244    	; 0xfa <WriteCommand>
 	WriteData((Start>>8));
- 1f6:	8d 2f       	mov	r24, r29
- 1f8:	90 e0       	ldi	r25, 0x00	; 0
- 1fa:	88 df       	rcall	.-240    	; 0x10c <WriteData>
+ 1ee:	8d 2f       	mov	r24, r29
+ 1f0:	90 e0       	ldi	r25, 0x00	; 0
+ 1f2:	8c df       	rcall	.-232    	; 0x10c <WriteData>
 	WriteData((Start));
- 1fc:	80 2f       	mov	r24, r16
- 1fe:	9d 2f       	mov	r25, r29
- 200:	85 df       	rcall	.-246    	; 0x10c <WriteData>
+ 1f4:	80 2f       	mov	r24, r16
+ 1f6:	9d 2f       	mov	r25, r29
+ 1f8:	89 df       	rcall	.-238    	; 0x10c <WriteData>
 	WriteData((End>>8));
- 202:	8c 2f       	mov	r24, r28
- 204:	90 e0       	ldi	r25, 0x00	; 0
- 206:	82 df       	rcall	.-252    	; 0x10c <WriteData>
+ 1fa:	8c 2f       	mov	r24, r28
+ 1fc:	90 e0       	ldi	r25, 0x00	; 0
+ 1fe:	86 df       	rcall	.-244    	; 0x10c <WriteData>
 	WriteData((End));
- 208:	81 2f       	mov	r24, r17
- 20a:	9c 2f       	mov	r25, r28
- 20c:	7f df       	rcall	.-258    	; 0x10c <WriteData>
- 20e:	df 91       	pop	r29
+ 200:	81 2f       	mov	r24, r17
+ 202:	9c 2f       	mov	r25, r28
+ 204:	83 df       	rcall	.-250    	; 0x10c <WriteData>
+ 206:	df 91       	pop	r29
 }
- 210:	cf 91       	pop	r28
- 212:	1f 91       	pop	r17
- 214:	0f 91       	pop	r16
- 216:	08 95       	ret
+ 208:	cf 91       	pop	r28
+ 20a:	1f 91       	pop	r17
+ 20c:	0f 91       	pop	r16
+ 20e:	08 95       	ret
 
-00000218 <SetPageAddress>:
- 218:	0f 93       	push	r16
+00000210 <SetPageAddress>:
+ 210:	0f 93       	push	r16
 
 // Set Page Address (0-319), Start > End
 void SetPageAddress(unsigned int Start, unsigned int End)
 {
- 21a:	1f 93       	push	r17
- 21c:	cf 93       	push	r28
- 21e:	df 93       	push	r29
- 220:	08 2f       	mov	r16, r24
- 222:	d9 2f       	mov	r29, r25
- 224:	16 2f       	mov	r17, r22
- 226:	c7 2f       	mov	r28, r23
+ 212:	1f 93       	push	r17
+ 214:	cf 93       	push	r28
+ 216:	df 93       	push	r29
+ 218:	08 2f       	mov	r16, r24
+ 21a:	d9 2f       	mov	r29, r25
+ 21c:	16 2f       	mov	r17, r22
+ 21e:	c7 2f       	mov	r28, r23
 	uint16_t command = 0b00101011;
 	WriteCommand(command);
- 228:	8b e2       	ldi	r24, 0x2B	; 43
- 22a:	90 e0       	ldi	r25, 0x00	; 0
- 22c:	66 df       	rcall	.-308    	; 0xfa <WriteCommand>
+ 220:	8b e2       	ldi	r24, 0x2B	; 43
+ 222:	90 e0       	ldi	r25, 0x00	; 0
+ 224:	6a df       	rcall	.-300    	; 0xfa <WriteCommand>
 	WriteData((Start>>8));
- 22e:	8d 2f       	mov	r24, r29
- 230:	90 e0       	ldi	r25, 0x00	; 0
- 232:	6c df       	rcall	.-296    	; 0x10c <WriteData>
+ 226:	8d 2f       	mov	r24, r29
+ 228:	90 e0       	ldi	r25, 0x00	; 0
+ 22a:	70 df       	rcall	.-288    	; 0x10c <WriteData>
 	WriteData((Start));
- 234:	80 2f       	mov	r24, r16
- 236:	9d 2f       	mov	r25, r29
- 238:	69 df       	rcall	.-302    	; 0x10c <WriteData>
+ 22c:	80 2f       	mov	r24, r16
+ 22e:	9d 2f       	mov	r25, r29
+ 230:	6d df       	rcall	.-294    	; 0x10c <WriteData>
 	WriteData((End>>8));
- 23a:	8c 2f       	mov	r24, r28
- 23c:	90 e0       	ldi	r25, 0x00	; 0
- 23e:	66 df       	rcall	.-308    	; 0x10c <WriteData>
+ 232:	8c 2f       	mov	r24, r28
+ 234:	90 e0       	ldi	r25, 0x00	; 0
+ 236:	6a df       	rcall	.-300    	; 0x10c <WriteData>
 	WriteData((End));
- 240:	81 2f       	mov	r24, r17
- 242:	9c 2f       	mov	r25, r28
- 244:	63 df       	rcall	.-314    	; 0x10c <WriteData>
- 246:	df 91       	pop	r29
+ 238:	81 2f       	mov	r24, r17
+ 23a:	9c 2f       	mov	r25, r28
+ 23c:	67 df       	rcall	.-306    	; 0x10c <WriteData>
+ 23e:	df 91       	pop	r29
 }
- 248:	cf 91       	pop	r28
- 24a:	1f 91       	pop	r17
- 24c:	0f 91       	pop	r16
- 24e:	08 95       	ret
+ 240:	cf 91       	pop	r28
+ 242:	1f 91       	pop	r17
+ 244:	0f 91       	pop	r16
+ 246:	08 95       	ret
 
-00000250 <FillRectangle>:
- 250:	4f 92       	push	r4
+00000248 <FillRectangle>:
+ 248:	4f 92       	push	r4
 // Fills rectangle with specified color
 // (StartX,StartY) = Upper left corner. X horizontal (0-319) , Y vertical (0-239).
 // Height (1-240) is vertical. Width (1-320) is horizontal.
 // R-G-B = 5-6-5 bits.
 void FillRectangle(unsigned int StartX, unsigned int StartY, unsigned int Width, unsigned int Height, unsigned char Red, unsigned char Green, unsigned char Blue)
 {
- 252:	5f 92       	push	r5
- 254:	6f 92       	push	r6
- 256:	7f 92       	push	r7
- 258:	8f 92       	push	r8
- 25a:	9f 92       	push	r9
- 25c:	af 92       	push	r10
- 25e:	bf 92       	push	r11
- 260:	cf 92       	push	r12
- 262:	ef 92       	push	r14
- 264:	0f 93       	push	r16
- 266:	3b 01       	movw	r6, r22
- 268:	4a 01       	movw	r8, r20
- 26a:	59 01       	movw	r10, r18
+ 24a:	5f 92       	push	r5
+ 24c:	6f 92       	push	r6
+ 24e:	7f 92       	push	r7
+ 250:	8f 92       	push	r8
+ 252:	9f 92       	push	r9
+ 254:	af 92       	push	r10
+ 256:	bf 92       	push	r11
+ 258:	cf 92       	push	r12
+ 25a:	ef 92       	push	r14
+ 25c:	0f 93       	push	r16
+ 25e:	3b 01       	movw	r6, r22
+ 260:	4a 01       	movw	r8, r20
+ 262:	59 01       	movw	r10, r18
 	uint32_t i = 0;
 	SetPageAddress(StartX,(StartX+Width));
- 26c:	bc 01       	movw	r22, r24
- 26e:	64 0f       	add	r22, r20
- 270:	75 1f       	adc	r23, r21
- 272:	d2 df       	rcall	.-92     	; 0x218 <SetPageAddress>
+ 264:	bc 01       	movw	r22, r24
+ 266:	64 0f       	add	r22, r20
+ 268:	75 1f       	adc	r23, r21
+ 26a:	d2 df       	rcall	.-92     	; 0x210 <SetPageAddress>
 	SetColumnAddress(StartY,(StartY+Height));
- 274:	b3 01       	movw	r22, r6
- 276:	6a 0d       	add	r22, r10
- 278:	7b 1d       	adc	r23, r11
- 27a:	c3 01       	movw	r24, r6
+ 26c:	b3 01       	movw	r22, r6
+ 26e:	6a 0d       	add	r22, r10
+ 270:	7b 1d       	adc	r23, r11
+ 272:	c3 01       	movw	r24, r6
 	MemoryWrite();
- 27c:	b1 df       	rcall	.-158    	; 0x1e0 <SetColumnAddress>
- 27e:	97 df       	rcall	.-210    	; 0x1ae <MemoryWrite>
+ 274:	b1 df       	rcall	.-158    	; 0x1d8 <SetColumnAddress>
+ 276:	97 df       	rcall	.-210    	; 0x1a6 <MemoryWrite>
 	
 	for(i = 0; i<(Width*Height); i++)
- 280:	8a 9c       	mul	r8, r10
- 282:	20 01       	movw	r4, r0
- 284:	8b 9c       	mul	r8, r11
- 286:	50 0c       	add	r5, r0
- 288:	9a 9c       	mul	r9, r10
- 28a:	50 0c       	add	r5, r0
- 28c:	11 24       	eor	r1, r1
- 28e:	61 2c       	mov	r6, r1
- 290:	71 2c       	mov	r7, r1
- 292:	41 14       	cp	r4, r1
- 294:	51 04       	cpc	r5, r1
- 296:	61 04       	cpc	r6, r1
- 298:	71 04       	cpc	r7, r1
- 29a:	89 f0       	breq	.+34     	; 0x2be <FillRectangle+0x6e>
- 29c:	81 2c       	mov	r8, r1
- 29e:	91 2c       	mov	r9, r1
- 2a0:	54 01       	movw	r10, r8
+ 278:	8a 9c       	mul	r8, r10
+ 27a:	20 01       	movw	r4, r0
+ 27c:	8b 9c       	mul	r8, r11
+ 27e:	50 0c       	add	r5, r0
+ 280:	9a 9c       	mul	r9, r10
+ 282:	50 0c       	add	r5, r0
+ 284:	11 24       	eor	r1, r1
+ 286:	61 2c       	mov	r6, r1
+ 288:	71 2c       	mov	r7, r1
+ 28a:	41 14       	cp	r4, r1
+ 28c:	51 04       	cpc	r5, r1
+ 28e:	61 04       	cpc	r6, r1
+ 290:	71 04       	cpc	r7, r1
+ 292:	89 f0       	breq	.+34     	; 0x2b6 <FillRectangle+0x6e>
+ 294:	81 2c       	mov	r8, r1
+ 296:	91 2c       	mov	r9, r1
+ 298:	54 01       	movw	r10, r8
 	{
 		WritePixel(Red,Green,Blue);
- 2a2:	4c 2d       	mov	r20, r12
- 2a4:	6e 2d       	mov	r22, r14
- 2a6:	80 2f       	mov	r24, r16
- 2a8:	86 df       	rcall	.-244    	; 0x1b6 <WritePixel>
+ 29a:	4c 2d       	mov	r20, r12
+ 29c:	6e 2d       	mov	r22, r14
+ 29e:	80 2f       	mov	r24, r16
+ 2a0:	86 df       	rcall	.-244    	; 0x1ae <WritePixel>
 	uint32_t i = 0;
 	SetPageAddress(StartX,(StartX+Width));
 	SetColumnAddress(StartY,(StartY+Height));
 	MemoryWrite();
 	
 	for(i = 0; i<(Width*Height); i++)
- 2aa:	8f ef       	ldi	r24, 0xFF	; 255
- 2ac:	88 1a       	sub	r8, r24
- 2ae:	98 0a       	sbc	r9, r24
- 2b0:	a8 0a       	sbc	r10, r24
- 2b2:	b8 0a       	sbc	r11, r24
- 2b4:	84 14       	cp	r8, r4
- 2b6:	95 04       	cpc	r9, r5
- 2b8:	a6 04       	cpc	r10, r6
- 2ba:	b7 04       	cpc	r11, r7
- 2bc:	90 f3       	brcs	.-28     	; 0x2a2 <FillRectangle+0x52>
+ 2a2:	8f ef       	ldi	r24, 0xFF	; 255
+ 2a4:	88 1a       	sub	r8, r24
+ 2a6:	98 0a       	sbc	r9, r24
+ 2a8:	a8 0a       	sbc	r10, r24
+ 2aa:	b8 0a       	sbc	r11, r24
+ 2ac:	84 14       	cp	r8, r4
+ 2ae:	95 04       	cpc	r9, r5
+ 2b0:	a6 04       	cpc	r10, r6
+ 2b2:	b7 04       	cpc	r11, r7
+ 2b4:	90 f3       	brcs	.-28     	; 0x29a <FillRectangle+0x52>
 	{
 		WritePixel(Red,Green,Blue);
 	}
- 2be:	0f 91       	pop	r16
- 2c0:	ef 90       	pop	r14
- 2c2:	cf 90       	pop	r12
- 2c4:	bf 90       	pop	r11
- 2c6:	af 90       	pop	r10
- 2c8:	9f 90       	pop	r9
- 2ca:	8f 90       	pop	r8
- 2cc:	7f 90       	pop	r7
- 2ce:	6f 90       	pop	r6
- 2d0:	5f 90       	pop	r5
- 2d2:	4f 90       	pop	r4
- 2d4:	08 95       	ret
+}
+ 2b6:	0f 91       	pop	r16
+ 2b8:	ef 90       	pop	r14
+ 2ba:	cf 90       	pop	r12
+ 2bc:	bf 90       	pop	r11
+ 2be:	af 90       	pop	r10
+ 2c0:	9f 90       	pop	r9
+ 2c2:	8f 90       	pop	r8
+ 2c4:	7f 90       	pop	r7
+ 2c6:	6f 90       	pop	r6
+ 2c8:	5f 90       	pop	r5
+ 2ca:	4f 90       	pop	r4
+ 2cc:	08 95       	ret
 
-000002d6 <main>:
-#include "TFTdriver.h"
+000002ce <main>:
+#include "stdbool.h"
 
 int main(void)
 {
   // Initialize the display
   DisplayInit();
- 2d6:	43 df       	rcall	.-378    	; 0x15e <DisplayInit>
+ 2ce:	43 df       	rcall	.-378    	; 0x156 <DisplayInit>
   // All pixels white (background)
-  FillRectangle(0,0,320,240,31,63,31);
+  FillRectangle(0,239,320,240,30,60,30);
+ 2d0:	0f 2e       	mov	r0, r31
+ 2d2:	fe e1       	ldi	r31, 0x1E	; 30
+ 2d4:	cf 2e       	mov	r12, r31
+ 2d6:	f0 2d       	mov	r31, r0
  2d8:	0f 2e       	mov	r0, r31
- 2da:	ff e1       	ldi	r31, 0x1F	; 31
- 2dc:	cf 2e       	mov	r12, r31
+ 2da:	fc e3       	ldi	r31, 0x3C	; 60
+ 2dc:	ef 2e       	mov	r14, r31
  2de:	f0 2d       	mov	r31, r0
- 2e0:	0f 2e       	mov	r0, r31
- 2e2:	ff e3       	ldi	r31, 0x3F	; 63
- 2e4:	ef 2e       	mov	r14, r31
- 2e6:	f0 2d       	mov	r31, r0
- 2e8:	0f e1       	ldi	r16, 0x1F	; 31
- 2ea:	20 ef       	ldi	r18, 0xF0	; 240
- 2ec:	30 e0       	ldi	r19, 0x00	; 0
- 2ee:	40 e4       	ldi	r20, 0x40	; 64
- 2f0:	51 e0       	ldi	r21, 0x01	; 1
- 2f2:	60 e0       	ldi	r22, 0x00	; 0
- 2f4:	70 e0       	ldi	r23, 0x00	; 0
- 2f6:	80 e0       	ldi	r24, 0x00	; 0
- 2f8:	90 e0       	ldi	r25, 0x00	; 0
- 2fa:	aa df       	rcall	.-172    	; 0x250 <FillRectangle>
-  // Draw red parts of danish flag
-  FillRectangle(0,140,100,100,31,0,0);
- 2fc:	c1 2c       	mov	r12, r1
- 2fe:	e1 2c       	mov	r14, r1
- 300:	24 e6       	ldi	r18, 0x64	; 100
- 302:	30 e0       	ldi	r19, 0x00	; 0
- 304:	44 e6       	ldi	r20, 0x64	; 100
- 306:	50 e0       	ldi	r21, 0x00	; 0
- 308:	6c e8       	ldi	r22, 0x8C	; 140
- 30a:	70 e0       	ldi	r23, 0x00	; 0
- 30c:	80 e0       	ldi	r24, 0x00	; 0
- 30e:	90 e0       	ldi	r25, 0x00	; 0
- 310:	9f df       	rcall	.-194    	; 0x250 <FillRectangle>
-  FillRectangle(0,0,100,100,31,0,0);
- 312:	24 e6       	ldi	r18, 0x64	; 100
- 314:	30 e0       	ldi	r19, 0x00	; 0
- 316:	44 e6       	ldi	r20, 0x64	; 100
- 318:	50 e0       	ldi	r21, 0x00	; 0
- 31a:	60 e0       	ldi	r22, 0x00	; 0
- 31c:	70 e0       	ldi	r23, 0x00	; 0
- 31e:	80 e0       	ldi	r24, 0x00	; 0
- 320:	90 e0       	ldi	r25, 0x00	; 0
- 322:	96 df       	rcall	.-212    	; 0x250 <FillRectangle>
+ 2e0:	0e e1       	ldi	r16, 0x1E	; 30
+ 2e2:	20 ef       	ldi	r18, 0xF0	; 240
+ 2e4:	30 e0       	ldi	r19, 0x00	; 0
+ 2e6:	40 e4       	ldi	r20, 0x40	; 64
+ 2e8:	51 e0       	ldi	r21, 0x01	; 1
+ 2ea:	6f ee       	ldi	r22, 0xEF	; 239
+ 2ec:	70 e0       	ldi	r23, 0x00	; 0
+ 2ee:	80 e0       	ldi	r24, 0x00	; 0
+ 2f0:	90 e0       	ldi	r25, 0x00	; 0
   FillRectangle(140,0,320-140,100,31,0,0);
- 324:	24 e6       	ldi	r18, 0x64	; 100
- 326:	30 e0       	ldi	r19, 0x00	; 0
- 328:	44 eb       	ldi	r20, 0xB4	; 180
- 32a:	50 e0       	ldi	r21, 0x00	; 0
- 32c:	60 e0       	ldi	r22, 0x00	; 0
- 32e:	70 e0       	ldi	r23, 0x00	; 0
- 330:	8c e8       	ldi	r24, 0x8C	; 140
- 332:	90 e0       	ldi	r25, 0x00	; 0
- 334:	8d df       	rcall	.-230    	; 0x250 <FillRectangle>
   FillRectangle(140,140,320-140,100,31,0,0);      
- 336:	24 e6       	ldi	r18, 0x64	; 100
- 338:	30 e0       	ldi	r19, 0x00	; 0
- 33a:	44 eb       	ldi	r20, 0xB4	; 180
- 33c:	50 e0       	ldi	r21, 0x00	; 0
- 33e:	6c e8       	ldi	r22, 0x8C	; 140
- 340:	70 e0       	ldi	r23, 0x00	; 0
- 342:	8c e8       	ldi	r24, 0x8C	; 140
- 344:	90 e0       	ldi	r25, 0x00	; 0
-  while(1)
-  {
-    DisplayOn();
- 346:	84 df       	rcall	.-248    	; 0x250 <FillRectangle>
- 348:	ee de       	rcall	.-548    	; 0x126 <DisplayOn>
- 34a:	2f ef       	ldi	r18, 0xFF	; 255
- 34c:	83 ed       	ldi	r24, 0xD3	; 211
- 34e:	90 e3       	ldi	r25, 0x30	; 48
- 350:	21 50       	subi	r18, 0x01	; 1
- 352:	80 40       	sbci	r24, 0x00	; 0
- 354:	90 40       	sbci	r25, 0x00	; 0
- 356:	e1 f7       	brne	.-8      	; 0x350 <main+0x7a>
- 358:	00 c0       	rjmp	.+0      	; 0x35a <main+0x84>
-    _delay_ms(1000);
-    DisplayOff();
- 35a:	00 00       	nop
- 35c:	e0 de       	rcall	.-576    	; 0x11e <DisplayOff>
- 35e:	2f ef       	ldi	r18, 0xFF	; 255
- 360:	83 ed       	ldi	r24, 0xD3	; 211
- 362:	90 e3       	ldi	r25, 0x30	; 48
- 364:	21 50       	subi	r18, 0x01	; 1
- 366:	80 40       	sbci	r24, 0x00	; 0
- 368:	90 40       	sbci	r25, 0x00	; 0
- 36a:	e1 f7       	brne	.-8      	; 0x364 <main+0x8e>
- 36c:	00 c0       	rjmp	.+0      	; 0x36e <main+0x98>
- 36e:	00 00       	nop
- 370:	eb cf       	rjmp	.-42     	; 0x348 <main+0x72>
+  
+  FillRectangle(0,239,320,240,0,0,0);
+	*/
+  DisplayOn();
+ 2f2:	aa df       	rcall	.-172    	; 0x248 <FillRectangle>
+ 2f4:	14 df       	rcall	.-472    	; 0x11e <DisplayOn>
+   while(1)
+  {  
+	  FillRectangle(0,239,320,240,30,60,30);
+ 2f6:	0f 2e       	mov	r0, r31
+ 2f8:	fe e1       	ldi	r31, 0x1E	; 30
+ 2fa:	cf 2e       	mov	r12, r31
+ 2fc:	f0 2d       	mov	r31, r0
+ 2fe:	0f 2e       	mov	r0, r31
+ 300:	fc e3       	ldi	r31, 0x3C	; 60
+ 302:	ef 2e       	mov	r14, r31
+ 304:	f0 2d       	mov	r31, r0
+ 306:	0e e1       	ldi	r16, 0x1E	; 30
+ 308:	20 ef       	ldi	r18, 0xF0	; 240
+ 30a:	30 e0       	ldi	r19, 0x00	; 0
+ 30c:	40 e4       	ldi	r20, 0x40	; 64
+ 30e:	51 e0       	ldi	r21, 0x01	; 1
+ 310:	6f ee       	ldi	r22, 0xEF	; 239
+ 312:	70 e0       	ldi	r23, 0x00	; 0
+ 314:	80 e0       	ldi	r24, 0x00	; 0
+ 316:	90 e0       	ldi	r25, 0x00	; 0
+ 318:	97 df       	rcall	.-210    	; 0x248 <FillRectangle>
+ 31a:	2f ef       	ldi	r18, 0xFF	; 255
+ 31c:	83 ed       	ldi	r24, 0xD3	; 211
+ 31e:	90 e3       	ldi	r25, 0x30	; 48
+ 320:	21 50       	subi	r18, 0x01	; 1
+ 322:	80 40       	sbci	r24, 0x00	; 0
+ 324:	90 40       	sbci	r25, 0x00	; 0
+ 326:	e1 f7       	brne	.-8      	; 0x320 <main+0x52>
+ 328:	00 c0       	rjmp	.+0      	; 0x32a <main+0x5c>
+ 32a:	00 00       	nop
+	  _delay_ms(1000);
+	  FillRectangle(0,239,320,240,0,0,0); 		
+ 32c:	c1 2c       	mov	r12, r1
+ 32e:	e1 2c       	mov	r14, r1
+ 330:	00 e0       	ldi	r16, 0x00	; 0
+ 332:	20 ef       	ldi	r18, 0xF0	; 240
+ 334:	30 e0       	ldi	r19, 0x00	; 0
+ 336:	40 e4       	ldi	r20, 0x40	; 64
+ 338:	51 e0       	ldi	r21, 0x01	; 1
+ 33a:	6f ee       	ldi	r22, 0xEF	; 239
+ 33c:	70 e0       	ldi	r23, 0x00	; 0
+ 33e:	80 e0       	ldi	r24, 0x00	; 0
+ 340:	90 e0       	ldi	r25, 0x00	; 0
+ 342:	82 df       	rcall	.-252    	; 0x248 <FillRectangle>
+ 344:	d8 cf       	rjmp	.-80     	; 0x2f6 <main+0x28>
 
-00000372 <_exit>:
- 372:	f8 94       	cli
+00000346 <_exit>:
+ 346:	f8 94       	cli
 
-00000374 <__stop_program>:
- 374:	ff cf       	rjmp	.-2      	; 0x374 <__stop_program>
+00000348 <__stop_program>:
+ 348:	ff cf       	rjmp	.-2      	; 0x348 <__stop_program>

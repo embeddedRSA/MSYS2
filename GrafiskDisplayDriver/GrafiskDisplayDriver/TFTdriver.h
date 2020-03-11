@@ -18,10 +18,16 @@
 
   Henning Hargaard, February 15, 2018
 ************************************************************/  
+
+#include "stdbool.h"
+
 void DisplayInit();
 void DisplayOff();
 void DisplayOn();
 void SleepOut();
+void enableBacklightControl(bool is_on);
+void enableCABC(bool enable);
+void setBrightness(uint16_t parameter);
 void MemoryAccessControl(unsigned char parameter);
 void InterfacePixelFormat(unsigned char parameter);
 void WritePixel(unsigned char Red, unsigned char Blue, unsigned char Green);
