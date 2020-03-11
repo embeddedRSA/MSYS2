@@ -213,9 +213,9 @@ static bool isDataOk(rgbData_t* data)
 static uint16_t rgbDataToInt(rgbData_t* data)
 {
 	uint16_t dataInt = 0;
-	dataInt |= data->blue;
-	dataInt |= data->green << 5;
-	dataInt |= data->red << 11;
+	dataInt |= (uint16_t)data->blue;
+	dataInt |= ((uint16_t)data->green) << 5;
+	dataInt |= ((uint16_t)data->red) << 11;
 	
 	return dataInt;
 }
@@ -271,4 +271,51 @@ void FillRectangle(unsigned int StartX, unsigned int StartY, unsigned int Width,
 	{
 		WritePixel(Red,Green,Blue);
 	}
+}
+
+void setBrightness(uint16_t parameter)
+{
+	if (parameter<=0xFF)
+	{
+		uint16_t command = 0b01010001;
+		WriteCommand(command);
+		WriteData(parameter);
+	}
+	else
+	{
+		//de nada.
+	}
+}
+
+void enableBacklightControl(bool is_on)
+{
+	uint16_t command = 0b01010011;
+	uint16_t parameter = 0;
+	if (is_on)
+	{
+		parameter = 0b00100100;
+	}
+	else
+	{
+		parameter = 0b00000100;
+	}
+	WriteCommand(command);
+	WriteData(parameter);
+
+}
+
+void enableCABC(bool enable)
+{
+	uint16_t command = 0b01010101;
+	uint16_t parameter = 0;
+	if (enable)
+	{
+		parameter = 0b00000010;
+	}
+	else
+	{
+		parameter = 0b00000000;
+	}
+	WriteCommand(command);
+	WriteData(parameter);
 }
