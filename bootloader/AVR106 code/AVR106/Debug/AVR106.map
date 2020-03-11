@@ -58,6 +58,8 @@ LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/b
 LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr51\libc.a
 LOAD C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.90/gcc/dev/atmega128/avr51\libatmega128.a
 END GROUP
+                0x00000000                __TEXT_REGION_ORIGIN__ = DEFINED (__TEXT_REGION_ORIGIN__)?__TEXT_REGION_ORIGIN__:0x0
+                0x00800100                __DATA_REGION_ORIGIN__ = DEFINED (__DATA_REGION_ORIGIN__)?__DATA_REGION_ORIGIN__:0x800100
                 0x00020000                __TEXT_REGION_LENGTH__ = DEFINED (__TEXT_REGION_LENGTH__)?__TEXT_REGION_LENGTH__:0x20000
                 0x0000ff00                __DATA_REGION_LENGTH__ = DEFINED (__DATA_REGION_LENGTH__)?__DATA_REGION_LENGTH__:0xff00
                 0x00010000                __EEPROM_REGION_LENGTH__ = DEFINED (__EEPROM_REGION_LENGTH__)?__EEPROM_REGION_LENGTH__:0x10000
@@ -416,12 +418,12 @@ END GROUP
  .debug_frame   0x00000000      0x164 Self_programming.o
  .debug_frame   0x00000164       0x38 Self_programming_main.o
 
-.debug_str      0x00000000      0x2d7
+.debug_str      0x00000000      0x2f8
  *(.debug_str)
- .debug_str     0x00000000      0x28b Self_programming.o
-                                0x2bf (size before relaxing)
- .debug_str     0x0000028b       0x4c Self_programming_main.o
-                                0x1f4 (size before relaxing)
+ .debug_str     0x00000000      0x2ac Self_programming.o
+                                0x2e0 (size before relaxing)
+ .debug_str     0x000002ac       0x4c Self_programming_main.o
+                                0x215 (size before relaxing)
 
 .debug_loc      0x00000000      0x689
  *(.debug_loc)

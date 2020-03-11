@@ -10,6 +10,10 @@ Discarded input sections
  .text          0x00000000        0x0 TFTdriver.o
  .data          0x00000000        0x0 TFTdriver.o
  .bss           0x00000000        0x0 TFTdriver.o
+ .text.setBrightness
+                0x00000000       0x24 TFTdriver.o
+ .text.enableBacklight
+                0x00000000       0x3a TFTdriver.o
  .text          0x00000000        0x0 TFTtest.o
  .data          0x00000000        0x0 TFTtest.o
  .bss           0x00000000        0x0 TFTtest.o
@@ -428,51 +432,51 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000       0xa0
+.debug_aranges  0x00000000       0xb0
  *(.debug_aranges)
  .debug_aranges
-                0x00000000       0x80 TFTdriver.o
+                0x00000000       0x90 TFTdriver.o
  .debug_aranges
-                0x00000080       0x20 TFTtest.o
+                0x00000090       0x20 TFTtest.o
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x159c
+.debug_info     0x00000000     0x168f
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0xbbc C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.3.300/gcc/dev/atmega2560/avr6/crtatmega2560.o
- .debug_info    0x00000bbc      0x6d9 TFTdriver.o
- .debug_info    0x00001295      0x307 TFTtest.o
+ .debug_info    0x00000bbc      0x7cc TFTdriver.o
+ .debug_info    0x00001388      0x307 TFTtest.o
 
-.debug_abbrev   0x00000000      0xe18
+.debug_abbrev   0x00000000      0xe45
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0xb1a C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.3.300/gcc/dev/atmega2560/avr6/crtatmega2560.o
- .debug_abbrev  0x00000b1a      0x1ed TFTdriver.o
- .debug_abbrev  0x00000d07      0x111 TFTtest.o
+ .debug_abbrev  0x00000b1a      0x21a TFTdriver.o
+ .debug_abbrev  0x00000d34      0x111 TFTtest.o
 
-.debug_line     0x00000000      0x6c6
+.debug_line     0x00000000      0x71b
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x1f9 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.3.300/gcc/dev/atmega2560/avr6/crtatmega2560.o
- .debug_line    0x000001f9      0x365 TFTdriver.o
- .debug_line    0x0000055e      0x168 TFTtest.o
+ .debug_line    0x000001f9      0x3ba TFTdriver.o
+ .debug_line    0x000005b3      0x168 TFTtest.o
 
-.debug_frame    0x00000000      0x178
+.debug_frame    0x00000000      0x1c0
  *(.debug_frame)
- .debug_frame   0x00000000      0x154 TFTdriver.o
- .debug_frame   0x00000154       0x24 TFTtest.o
+ .debug_frame   0x00000000      0x19c TFTdriver.o
+ .debug_frame   0x0000019c       0x24 TFTtest.o
 
-.debug_str      0x00000000      0x6d7
+.debug_str      0x00000000      0x768
  *(.debug_str)
  .debug_str     0x00000000      0x3e6 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.3.300/gcc/dev/atmega2560/avr6/crtatmega2560.o
- .debug_str     0x000003e6      0x2dd TFTdriver.o
-                                0x311 (size before relaxing)
- .debug_str     0x000006c3       0x14 TFTtest.o
+ .debug_str     0x000003e6      0x30f TFTdriver.o
+                                0x343 (size before relaxing)
+ .debug_str     0x000006f5       0x73 TFTtest.o
                                 0x207 (size before relaxing)
 
-.debug_loc      0x00000000      0x542
+.debug_loc      0x00000000      0x637
  *(.debug_loc)
- .debug_loc     0x00000000      0x4fa TFTdriver.o
- .debug_loc     0x000004fa       0x48 TFTtest.o
+ .debug_loc     0x00000000      0x5ef TFTdriver.o
+ .debug_loc     0x000005ef       0x48 TFTtest.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -492,10 +496,10 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000       0x80
+.debug_ranges   0x00000000       0x90
  *(.debug_ranges)
- .debug_ranges  0x00000000       0x70 TFTdriver.o
- .debug_ranges  0x00000070       0x10 TFTtest.o
+ .debug_ranges  0x00000000       0x80 TFTdriver.o
+ .debug_ranges  0x00000080       0x10 TFTtest.o
 
 .debug_macro
  *(.debug_macro)

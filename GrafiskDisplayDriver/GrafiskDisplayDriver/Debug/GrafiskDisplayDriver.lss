@@ -11,21 +11,21 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   3 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  000003fc  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 000000a0  00000000  00000000  0000043c  2**0
+  4 .debug_aranges 000000b0  00000000  00000000  0000043c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   0000159c  00000000  00000000  000004dc  2**0
+  5 .debug_info   0000168f  00000000  00000000  000004ec  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 00000e18  00000000  00000000  00001a78  2**0
+  6 .debug_abbrev 00000e45  00000000  00000000  00001b7b  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   000006c6  00000000  00000000  00002890  2**0
+  7 .debug_line   0000071b  00000000  00000000  000029c0  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  00000178  00000000  00000000  00002f58  2**2
+  8 .debug_frame  000001c0  00000000  00000000  000030dc  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    000006d7  00000000  00000000  000030d0  2**0
+  9 .debug_str    00000768  00000000  00000000  0000329c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    00000542  00000000  00000000  000037a7  2**0
+ 10 .debug_loc    00000637  00000000  00000000  00003a04  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 00000080  00000000  00000000  00003ce9  2**0
+ 11 .debug_ranges 00000090  00000000  00000000  0000403b  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -162,58 +162,30 @@ Disassembly of section .text:
   f8:	83 cf       	rjmp	.-250    	; 0x0 <__vectors>
 
 000000fa <WriteCommand>:
-static void WriteCommand(unsigned int command)
-{
-	uint8_t bit = 0b00000001;
-	
-	//Set command
-	DATA_PORT_HIGH = (uint8_t)(command>>8);
+		parameter = 0b00000000;
+	}
+	WriteCommand(command);
+	WriteData(parameter);
+
+}
   fa:	92 b9       	out	0x02, r25	; 2
-	DATA_PORT_LOW = (uint8_t)(command&(0x00FF));
   fc:	88 b9       	out	0x08, r24	; 8
-	
-	DC_PORT &= ~(bit<<DC_BIT); //Trigger falling edge, no waiting because other controller is faster than us.
   fe:	5f 98       	cbi	0x0b, 7	; 11
-	CS_PORT &= ~(bit<<CS_BIT);
  100:	a1 98       	cbi	0x14, 1	; 20
-	
-	//Write pulse
-	WR_PORT &= ~(bit<<WR_BIT); //WRX low
  102:	a2 98       	cbi	0x14, 2	; 20
-	WR_PORT |= bit<<WR_BIT; //WRX high triggers read signal
  104:	a2 9a       	sbi	0x14, 2	; 20
-	
-	CS_PORT |= bit<<CS_BIT; //CS set high
  106:	a1 9a       	sbi	0x14, 1	; 20
-	WR_PORT &= ~(bit<<WR_BIT); //WRX low
  108:	a2 98       	cbi	0x14, 2	; 20
  10a:	08 95       	ret
 
 0000010c <WriteData>:
-static void WriteData(unsigned int data)
-{
-	uint8_t bit = 0b00000001;
-		
-	//Set data
-	DATA_PORT_HIGH = (uint8_t)(data>>8);
  10c:	92 b9       	out	0x02, r25	; 2
-	DATA_PORT_LOW = (uint8_t)(data&(0x00FF));
  10e:	88 b9       	out	0x08, r24	; 8
-		
-	DC_PORT |= bit<<DC_BIT; //Trigger rising edge, no waiting because other controller is faster than us.
  110:	5f 9a       	sbi	0x0b, 7	; 11
-	CS_PORT &= ~(bit<<CS_BIT); // Chip select active low, trigger falling edge
  112:	a1 98       	cbi	0x14, 1	; 20
-		
-	//Write pulse
-	WR_PORT &= ~(bit<<WR_BIT);
  114:	a2 98       	cbi	0x14, 2	; 20
-	WR_PORT |= bit<<WR_BIT;
  116:	a2 9a       	sbi	0x14, 2	; 20
-		
-	CS_PORT |= bit<<CS_BIT; //CS set high
  118:	a1 9a       	sbi	0x14, 1	; 20
-	WR_PORT &= ~(bit<<WR_BIT);
  11a:	a2 98       	cbi	0x14, 2	; 20
  11c:	08 95       	ret
 
@@ -603,15 +575,7 @@ void FillRectangle(unsigned int StartX, unsigned int StartY, unsigned int Width,
  2d4:	08 95       	ret
 
 000002d6 <main>:
-#include "TFTdriver.h"
-
-int main(void)
-{
-  // Initialize the display
-  DisplayInit();
  2d6:	43 df       	rcall	.-378    	; 0x15e <DisplayInit>
-  // All pixels white (background)
-  FillRectangle(0,0,320,240,31,63,31);
  2d8:	0f 2e       	mov	r0, r31
  2da:	ff e1       	ldi	r31, 0x1F	; 31
  2dc:	cf 2e       	mov	r12, r31
@@ -630,8 +594,6 @@ int main(void)
  2f6:	80 e0       	ldi	r24, 0x00	; 0
  2f8:	90 e0       	ldi	r25, 0x00	; 0
  2fa:	aa df       	rcall	.-172    	; 0x250 <FillRectangle>
-  // Draw red parts of danish flag
-  FillRectangle(0,140,100,100,31,0,0);
  2fc:	c1 2c       	mov	r12, r1
  2fe:	e1 2c       	mov	r14, r1
  300:	24 e6       	ldi	r18, 0x64	; 100
@@ -643,7 +605,6 @@ int main(void)
  30c:	80 e0       	ldi	r24, 0x00	; 0
  30e:	90 e0       	ldi	r25, 0x00	; 0
  310:	9f df       	rcall	.-194    	; 0x250 <FillRectangle>
-  FillRectangle(0,0,100,100,31,0,0);
  312:	24 e6       	ldi	r18, 0x64	; 100
  314:	30 e0       	ldi	r19, 0x00	; 0
  316:	44 e6       	ldi	r20, 0x64	; 100
@@ -653,7 +614,6 @@ int main(void)
  31e:	80 e0       	ldi	r24, 0x00	; 0
  320:	90 e0       	ldi	r25, 0x00	; 0
  322:	96 df       	rcall	.-212    	; 0x250 <FillRectangle>
-  FillRectangle(140,0,320-140,100,31,0,0);
  324:	24 e6       	ldi	r18, 0x64	; 100
  326:	30 e0       	ldi	r19, 0x00	; 0
  328:	44 eb       	ldi	r20, 0xB4	; 180
@@ -663,7 +623,6 @@ int main(void)
  330:	8c e8       	ldi	r24, 0x8C	; 140
  332:	90 e0       	ldi	r25, 0x00	; 0
  334:	8d df       	rcall	.-230    	; 0x250 <FillRectangle>
-  FillRectangle(140,140,320-140,100,31,0,0);      
  336:	24 e6       	ldi	r18, 0x64	; 100
  338:	30 e0       	ldi	r19, 0x00	; 0
  33a:	44 eb       	ldi	r20, 0xB4	; 180
@@ -672,9 +631,6 @@ int main(void)
  340:	70 e0       	ldi	r23, 0x00	; 0
  342:	8c e8       	ldi	r24, 0x8C	; 140
  344:	90 e0       	ldi	r25, 0x00	; 0
-  while(1)
-  {
-    DisplayOn();
  346:	84 df       	rcall	.-248    	; 0x250 <FillRectangle>
  348:	ee de       	rcall	.-548    	; 0x126 <DisplayOn>
  34a:	2f ef       	ldi	r18, 0xFF	; 255
@@ -685,8 +641,6 @@ int main(void)
  354:	90 40       	sbci	r25, 0x00	; 0
  356:	e1 f7       	brne	.-8      	; 0x350 <main+0x7a>
  358:	00 c0       	rjmp	.+0      	; 0x35a <main+0x84>
-    _delay_ms(1000);
-    DisplayOff();
  35a:	00 00       	nop
  35c:	e0 de       	rcall	.-576    	; 0x11e <DisplayOff>
  35e:	2f ef       	ldi	r18, 0xFF	; 255

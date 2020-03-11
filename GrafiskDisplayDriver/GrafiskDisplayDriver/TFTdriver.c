@@ -93,6 +93,40 @@ static void WriteData(unsigned int data)
 	//clean up??
 }
 
+void setBrightness(uint32_t parameter)
+{
+	if (parameter>=0 || parameter<=0xFF)
+	{
+		uint16_t command = 0x51;
+		WriteCommand(command);
+		WriteData(parameter);
+	} 
+	else
+	{
+		//de nada.
+	}
+
+}
+
+
+void enableBacklight(bool is_on)
+{
+	uint16_t command = 0b01010011;
+	uint32_t parameter;
+	if (is_on==true)
+	{
+		parameter = 0b00100100;
+
+	}
+	else
+	{
+		parameter = 0b00000000;
+	}
+	WriteCommand(command);
+	WriteData(parameter);
+
+}
+
 // PUBLIC FUNCTIONS ////////////////////////////////////////////////////////////
 
 // Initializes (resets) the display
