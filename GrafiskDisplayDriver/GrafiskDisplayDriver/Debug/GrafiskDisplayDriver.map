@@ -11,9 +11,15 @@ Discarded input sections
  .data          0x00000000        0x0 TFTdriver.o
  .bss           0x00000000        0x0 TFTdriver.o
  .text.setBrightness
-                0x00000000       0x24 TFTdriver.o
+                0x00000000       0x18 TFTdriver.o
  .text.enableBacklight
                 0x00000000       0x3a TFTdriver.o
+ .text.DisplayOff
+                0x00000000        0xa TFTdriver.o
+ .text.enableBacklightControl
+                0x00000000       0x26 TFTdriver.o
+ .text.enableCABC
+                0x00000000       0x26 TFTdriver.o
  .text          0x00000000        0x0 TFTtest.o
  .data          0x00000000        0x0 TFTtest.o
  .bss           0x00000000        0x0 TFTtest.o
@@ -161,7 +167,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x34a
+.text           0x00000000      0x35c
  *(.vectors)
  .vectors       0x00000000       0xe4 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.3.300/gcc/dev/atmega2560/avr6/crtatmega2560.o
                 0x00000000                __vector_default
@@ -309,13 +315,13 @@ END GROUP
  .text.FillRectangle
                 0x00000248       0x86 TFTdriver.o
                 0x00000248                FillRectangle
- .text.main     0x000002ce       0x78 TFTtest.o
+ .text.main     0x000002ce       0x8a TFTtest.o
                 0x000002ce                main
-                0x00000346                . = ALIGN (0x2)
+                0x00000358                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00000346        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr6\libgcc.a(_exit.o)
-                0x00000346                _exit
-                0x00000346                exit
+ .fini9         0x00000358        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr6\libgcc.a(_exit.o)
+                0x00000358                _exit
+                0x00000358                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -334,11 +340,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00000346        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr6\libgcc.a(_exit.o)
+ .fini0         0x00000358        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr6\libgcc.a(_exit.o)
  *(.fini0)
-                0x0000034a                _etext = .
+                0x0000035c                _etext = .
 
-.data           0x00800200        0x0 load address 0x0000034a
+.data           0x00800200        0x0 load address 0x0000035c
                 [!provide]                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -356,8 +362,8 @@ END GROUP
  *(.bss*)
  *(COMMON)
                 [!provide]                PROVIDE (__bss_end, .)
-                0x0000034a                __data_load_start = LOADADDR (.data)
-                0x0000034a                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x0000035c                __data_load_start = LOADADDR (.data)
+                0x0000035c                __data_load_end = (__data_load_start + SIZEOF (.data))
 
 .noinit         0x00800200        0x0
                 [!provide]                PROVIDE (__noinit_start, .)
@@ -429,51 +435,50 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000       0xb0
+.debug_aranges  0x00000000       0xc0
  *(.debug_aranges)
  .debug_aranges
-                0x00000000       0x90 TFTdriver.o
+                0x00000000       0xa0 TFTdriver.o
  .debug_aranges
-                0x00000090       0x20 TFTtest.o
+                0x000000a0       0x20 TFTtest.o
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x168f
+.debug_info     0x00000000     0x16d7
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0xbbc C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.3.300/gcc/dev/atmega2560/avr6/crtatmega2560.o
- .debug_info    0x00000bbc      0x7cc TFTdriver.o
- .debug_info    0x00001388      0x307 TFTtest.o
+ .debug_info    0x00000bbc      0x89c TFTdriver.o
+ .debug_info    0x00001458      0x27f TFTtest.o
 
-.debug_abbrev   0x00000000      0xe45
+.debug_abbrev   0x00000000      0xdde
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0xb1a C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.3.300/gcc/dev/atmega2560/avr6/crtatmega2560.o
- .debug_abbrev  0x00000b1a      0x21a TFTdriver.o
- .debug_abbrev  0x00000d34      0x111 TFTtest.o
+ .debug_abbrev  0x00000b1a      0x243 TFTdriver.o
+ .debug_abbrev  0x00000d5d       0x81 TFTtest.o
 
-.debug_line     0x00000000      0x71b
+.debug_line     0x00000000      0x698
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x1f9 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.3.300/gcc/dev/atmega2560/avr6/crtatmega2560.o
- .debug_line    0x000001f9      0x3ba TFTdriver.o
- .debug_line    0x000005b3      0x168 TFTtest.o
+ .debug_line    0x000001f9      0x424 TFTdriver.o
+ .debug_line    0x0000061d       0x7b TFTtest.o
 
-.debug_frame    0x00000000      0x1c0
+.debug_frame    0x00000000      0x1ec
  *(.debug_frame)
- .debug_frame   0x00000000      0x19c TFTdriver.o
- .debug_frame   0x0000019c       0x24 TFTtest.o
+ .debug_frame   0x00000000      0x1c8 TFTdriver.o
+ .debug_frame   0x000001c8       0x24 TFTtest.o
 
-.debug_str      0x00000000      0x768
+.debug_str      0x00000000      0x724
  *(.debug_str)
  .debug_str     0x00000000      0x3e6 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.3.300/gcc/dev/atmega2560/avr6/crtatmega2560.o
- .debug_str     0x000003e6      0x30f TFTdriver.o
-                                0x343 (size before relaxing)
- .debug_str     0x000006f5       0x73 TFTtest.o
-                                0x207 (size before relaxing)
+ .debug_str     0x000003e6      0x32a TFTdriver.o
+                                0x35e (size before relaxing)
+ .debug_str     0x00000710       0x14 TFTtest.o
+                                0x1b1 (size before relaxing)
 
-.debug_loc      0x00000000      0x637
+.debug_loc      0x00000000      0x69a
  *(.debug_loc)
- .debug_loc     0x00000000      0x5ef TFTdriver.o
- .debug_loc     0x000005ef       0x48 TFTtest.o
+ .debug_loc     0x00000000      0x69a TFTdriver.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -493,10 +498,10 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000       0x90
+.debug_ranges   0x00000000       0xa0
  *(.debug_ranges)
- .debug_ranges  0x00000000       0x80 TFTdriver.o
- .debug_ranges  0x00000080       0x10 TFTtest.o
+ .debug_ranges  0x00000000       0x90 TFTdriver.o
+ .debug_ranges  0x00000090       0x10 TFTtest.o
 
 .debug_macro
  *(.debug_macro)

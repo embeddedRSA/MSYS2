@@ -3,29 +3,29 @@ GrafiskDisplayDriver.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .data         00000000  00800200  00800200  0000039e  2**0
+  0 .data         00000000  00800200  00800200  000003b0  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  1 .text         0000034a  00000000  00000000  00000054  2**1
+  1 .text         0000035c  00000000  00000000  00000054  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .comment      00000030  00000000  00000000  0000039e  2**0
+  2 .comment      00000030  00000000  00000000  000003b0  2**0
                   CONTENTS, READONLY
-  3 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  000003d0  2**2
+  3 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  000003e0  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 000000b0  00000000  00000000  0000043c  2**0
+  4 .debug_aranges 000000c0  00000000  00000000  00000420  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   0000168f  00000000  00000000  000004ec  2**0
+  5 .debug_info   000016d7  00000000  00000000  000004e0  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 00000e45  00000000  00000000  00001b7b  2**0
+  6 .debug_abbrev 00000dde  00000000  00000000  00001bb7  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   0000071b  00000000  00000000  000029c0  2**0
+  7 .debug_line   00000698  00000000  00000000  00002995  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  000001c0  00000000  00000000  000030dc  2**2
+  8 .debug_frame  000001ec  00000000  00000000  00003030  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    00000768  00000000  00000000  0000329c  2**0
+  9 .debug_str    00000724  00000000  00000000  0000321c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    00000637  00000000  00000000  00003a04  2**0
+ 10 .debug_loc    0000069a  00000000  00000000  00003940  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 00000090  00000000  00000000  0000403b  2**0
+ 11 .debug_ranges 000000a0  00000000  00000000  00003fda  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -156,18 +156,18 @@ Disassembly of section .text:
   f0:	00 e0       	ldi	r16, 0x00	; 0
   f2:	0c bf       	out	0x3c, r16	; 60
   f4:	ec d0       	rcall	.+472    	; 0x2ce <main>
-  f6:	27 c1       	rjmp	.+590    	; 0x346 <_exit>
+  f6:	30 c1       	rjmp	.+608    	; 0x358 <_exit>
 
 000000f8 <__bad_interrupt>:
   f8:	83 cf       	rjmp	.-250    	; 0x0 <__vectors>
 
 000000fa <WriteCommand>:
-		parameter = 0b00000000;
-	}
-	WriteCommand(command);
-	WriteData(parameter);
-
 }
+
+void DisplayOff()
+{
+	uint16_t command = 0b00101000;
+	WriteCommand(command);
   fa:	92 b9       	out	0x02, r25	; 2
   fc:	88 b9       	out	0x08, r24	; 8
   fe:	5f 98       	cbi	0x0b, 7	; 11
@@ -214,7 +214,7 @@ void SleepOut()
  12c:	08 95       	ret
 
 0000012e <MemoryAccessControl>:
-
+	
 }
 
 void MemoryAccessControl(unsigned char parameter)
@@ -249,7 +249,7 @@ void InterfacePixelFormat(unsigned char parameter)
  14c:	8c 2f       	mov	r24, r28
  14e:	90 e0       	ldi	r25, 0x00	; 0
  150:	dd df       	rcall	.-70     	; 0x10c <WriteData>
-
+	
 }
  152:	cf 91       	pop	r28
  154:	08 95       	ret
@@ -258,7 +258,7 @@ void InterfacePixelFormat(unsigned char parameter)
 void DisplayInit()
 {
 	uint8_t bit = 0b00000001;
-
+	
 	//Set control bits to output
 	DDRG |= (bit<<CS_BIT)|(bit<<RST_BIT)|(bit<<WR_BIT);
  156:	83 b3       	in	r24, 0x13	; 19
@@ -266,7 +266,7 @@ void DisplayInit()
  15a:	83 bb       	out	0x13, r24	; 19
 	DDRD |= (bit<<DC_BIT);
  15c:	57 9a       	sbi	0x0a, 7	; 10
-
+	
 	//Set data ports to output
 	DDRA |= 0xFF;
  15e:	81 b1       	in	r24, 0x01	; 1
@@ -275,7 +275,7 @@ void DisplayInit()
 	DDRC |= 0xFF;
  164:	97 b1       	in	r25, 0x07	; 7
  166:	87 b9       	out	0x07, r24	; 7
-
+	
 	// set control pins start position high
 	DC_PORT |= bit<<DC_BIT;
  168:	5f 9a       	sbi	0x0b, 7	; 11
@@ -285,7 +285,7 @@ void DisplayInit()
  16c:	a1 9a       	sbi	0x14, 1	; 20
 	RST_PORT|= bit<<RST_BIT;
  16e:	a0 9a       	sbi	0x14, 0	; 20
-
+	
 	//Reset grafik display
 	RST_PORT &= ~(bit<<RST_BIT);
  170:	a0 98       	cbi	0x14, 0	; 20
@@ -317,7 +317,7 @@ void DisplayInit()
  194:	00 c0       	rjmp	.+0      	; 0x196 <DisplayInit+0x40>
  196:	00 00       	nop
 	_delay_ms(130);
-
+	
 	// Exit sleep mode
 	SleepOut();
  198:	c6 df       	rcall	.-116    	; 0x126 <SleepOut>
@@ -371,7 +371,7 @@ static uint16_t rgbDataToInt(rgbData_t* data)
  1c2:	64 2b       	or	r22, r20
 	data.green = Green;
 	data.blue = Blue;
-
+	
 	if(isDataOk(&data))
 	{
 		WriteData(rgbDataToInt(&data));
@@ -505,7 +505,7 @@ void FillRectangle(unsigned int StartX, unsigned int StartY, unsigned int Width,
 	MemoryWrite();
  274:	b1 df       	rcall	.-158    	; 0x1d8 <SetColumnAddress>
  276:	97 df       	rcall	.-210    	; 0x1a6 <MemoryWrite>
-
+	
 	for(i = 0; i<(Width*Height); i++)
  278:	8a 9c       	mul	r8, r10
  27a:	20 01       	movw	r4, r0
@@ -534,7 +534,7 @@ void FillRectangle(unsigned int StartX, unsigned int StartY, unsigned int Width,
 	SetPageAddress(StartX,(StartX+Width));
 	SetColumnAddress(StartY,(StartY+Height));
 	MemoryWrite();
-
+	
 	for(i = 0; i<(Width*Height); i++)
  2a2:	8f ef       	ldi	r24, 0xFF	; 255
  2a4:	88 1a       	sub	r8, r24
@@ -549,101 +549,110 @@ void FillRectangle(unsigned int StartX, unsigned int StartY, unsigned int Width,
 	{
 		WritePixel(Red,Green,Blue);
 	}
- 2be:	0f 91       	pop	r16
- 2c0:	ef 90       	pop	r14
- 2c2:	cf 90       	pop	r12
- 2c4:	bf 90       	pop	r11
- 2c6:	af 90       	pop	r10
- 2c8:	9f 90       	pop	r9
- 2ca:	8f 90       	pop	r8
- 2cc:	7f 90       	pop	r7
- 2ce:	6f 90       	pop	r6
- 2d0:	5f 90       	pop	r5
- 2d2:	4f 90       	pop	r4
- 2d4:	08 95       	ret
+}
+ 2b6:	0f 91       	pop	r16
+ 2b8:	ef 90       	pop	r14
+ 2ba:	cf 90       	pop	r12
+ 2bc:	bf 90       	pop	r11
+ 2be:	af 90       	pop	r10
+ 2c0:	9f 90       	pop	r9
+ 2c2:	8f 90       	pop	r8
+ 2c4:	7f 90       	pop	r7
+ 2c6:	6f 90       	pop	r6
+ 2c8:	5f 90       	pop	r5
+ 2ca:	4f 90       	pop	r4
+ 2cc:	08 95       	ret
 
-000002d6 <main>:
- 2d6:	43 df       	rcall	.-378    	; 0x15e <DisplayInit>
+000002ce <main>:
+#include "stdbool.h"
+
+int main(void)
+{
+  // Initialize the display
+  DisplayInit();
+ 2ce:	43 df       	rcall	.-378    	; 0x156 <DisplayInit>
+  // All pixels white (background)
+  FillRectangle(0,239,320,240,31,63,31);
+ 2d0:	0f 2e       	mov	r0, r31
+ 2d2:	ff e1       	ldi	r31, 0x1F	; 31
+ 2d4:	cf 2e       	mov	r12, r31
+ 2d6:	f0 2d       	mov	r31, r0
  2d8:	0f 2e       	mov	r0, r31
- 2da:	fc e3       	ldi	r31, 0x3C	; 60
+ 2da:	ff e3       	ldi	r31, 0x3F	; 63
  2dc:	ef 2e       	mov	r14, r31
  2de:	f0 2d       	mov	r31, r0
- 2e0:	0f 2e       	mov	r0, r31
- 2e2:	ff e3       	ldi	r31, 0x3F	; 63
- 2e4:	ef 2e       	mov	r14, r31
- 2e6:	f0 2d       	mov	r31, r0
- 2e8:	0f e1       	ldi	r16, 0x1F	; 31
- 2ea:	20 ef       	ldi	r18, 0xF0	; 240
- 2ec:	30 e0       	ldi	r19, 0x00	; 0
- 2ee:	40 e4       	ldi	r20, 0x40	; 64
- 2f0:	51 e0       	ldi	r21, 0x01	; 1
- 2f2:	60 e0       	ldi	r22, 0x00	; 0
- 2f4:	70 e0       	ldi	r23, 0x00	; 0
- 2f6:	80 e0       	ldi	r24, 0x00	; 0
- 2f8:	90 e0       	ldi	r25, 0x00	; 0
- 2fa:	aa df       	rcall	.-172    	; 0x250 <FillRectangle>
- 2fc:	c1 2c       	mov	r12, r1
- 2fe:	e1 2c       	mov	r14, r1
- 300:	24 e6       	ldi	r18, 0x64	; 100
- 302:	30 e0       	ldi	r19, 0x00	; 0
- 304:	44 e6       	ldi	r20, 0x64	; 100
- 306:	50 e0       	ldi	r21, 0x00	; 0
- 308:	6c e8       	ldi	r22, 0x8C	; 140
- 30a:	70 e0       	ldi	r23, 0x00	; 0
- 30c:	80 e0       	ldi	r24, 0x00	; 0
- 30e:	90 e0       	ldi	r25, 0x00	; 0
- 310:	9f df       	rcall	.-194    	; 0x250 <FillRectangle>
- 312:	24 e6       	ldi	r18, 0x64	; 100
- 314:	30 e0       	ldi	r19, 0x00	; 0
- 316:	44 e6       	ldi	r20, 0x64	; 100
- 318:	50 e0       	ldi	r21, 0x00	; 0
- 31a:	60 e0       	ldi	r22, 0x00	; 0
- 31c:	70 e0       	ldi	r23, 0x00	; 0
- 31e:	80 e0       	ldi	r24, 0x00	; 0
- 320:	90 e0       	ldi	r25, 0x00	; 0
- 322:	96 df       	rcall	.-212    	; 0x250 <FillRectangle>
- 324:	24 e6       	ldi	r18, 0x64	; 100
- 326:	30 e0       	ldi	r19, 0x00	; 0
- 328:	44 eb       	ldi	r20, 0xB4	; 180
- 32a:	50 e0       	ldi	r21, 0x00	; 0
- 32c:	60 e0       	ldi	r22, 0x00	; 0
- 32e:	70 e0       	ldi	r23, 0x00	; 0
- 330:	8c e8       	ldi	r24, 0x8C	; 140
- 332:	90 e0       	ldi	r25, 0x00	; 0
- 334:	8d df       	rcall	.-230    	; 0x250 <FillRectangle>
- 336:	24 e6       	ldi	r18, 0x64	; 100
- 338:	30 e0       	ldi	r19, 0x00	; 0
- 33a:	44 eb       	ldi	r20, 0xB4	; 180
- 33c:	50 e0       	ldi	r21, 0x00	; 0
- 33e:	6c e8       	ldi	r22, 0x8C	; 140
- 340:	70 e0       	ldi	r23, 0x00	; 0
- 342:	8c e8       	ldi	r24, 0x8C	; 140
- 344:	90 e0       	ldi	r25, 0x00	; 0
- 346:	84 df       	rcall	.-248    	; 0x250 <FillRectangle>
- 348:	ee de       	rcall	.-548    	; 0x126 <DisplayOn>
- 34a:	2f ef       	ldi	r18, 0xFF	; 255
- 34c:	83 ed       	ldi	r24, 0xD3	; 211
- 34e:	90 e3       	ldi	r25, 0x30	; 48
- 350:	21 50       	subi	r18, 0x01	; 1
- 352:	80 40       	sbci	r24, 0x00	; 0
- 354:	90 40       	sbci	r25, 0x00	; 0
- 356:	e1 f7       	brne	.-8      	; 0x350 <main+0x7a>
- 358:	00 c0       	rjmp	.+0      	; 0x35a <main+0x84>
- 35a:	00 00       	nop
- 35c:	e0 de       	rcall	.-576    	; 0x11e <DisplayOff>
- 35e:	2f ef       	ldi	r18, 0xFF	; 255
- 360:	83 ed       	ldi	r24, 0xD3	; 211
- 362:	90 e3       	ldi	r25, 0x30	; 48
- 364:	21 50       	subi	r18, 0x01	; 1
- 366:	80 40       	sbci	r24, 0x00	; 0
- 368:	90 40       	sbci	r25, 0x00	; 0
- 36a:	e1 f7       	brne	.-8      	; 0x364 <main+0x8e>
- 36c:	00 c0       	rjmp	.+0      	; 0x36e <main+0x98>
- 36e:	00 00       	nop
- 370:	eb cf       	rjmp	.-42     	; 0x348 <main+0x72>
+ 2e0:	0f e1       	ldi	r16, 0x1F	; 31
+ 2e2:	20 ef       	ldi	r18, 0xF0	; 240
+ 2e4:	30 e0       	ldi	r19, 0x00	; 0
+ 2e6:	40 e4       	ldi	r20, 0x40	; 64
+ 2e8:	51 e0       	ldi	r21, 0x01	; 1
+ 2ea:	6f ee       	ldi	r22, 0xEF	; 239
+ 2ec:	70 e0       	ldi	r23, 0x00	; 0
+ 2ee:	80 e0       	ldi	r24, 0x00	; 0
+ 2f0:	90 e0       	ldi	r25, 0x00	; 0
+ 2f2:	aa df       	rcall	.-172    	; 0x248 <FillRectangle>
+  // Draw red parts of danish flag
 
-00000372 <_exit>:
- 372:	f8 94       	cli
+  FillRectangle(0,140,100,100,31,0,0);
+ 2f4:	c1 2c       	mov	r12, r1
+ 2f6:	e1 2c       	mov	r14, r1
+ 2f8:	24 e6       	ldi	r18, 0x64	; 100
+ 2fa:	30 e0       	ldi	r19, 0x00	; 0
+ 2fc:	44 e6       	ldi	r20, 0x64	; 100
+ 2fe:	50 e0       	ldi	r21, 0x00	; 0
+ 300:	6c e8       	ldi	r22, 0x8C	; 140
+ 302:	70 e0       	ldi	r23, 0x00	; 0
+ 304:	80 e0       	ldi	r24, 0x00	; 0
+ 306:	90 e0       	ldi	r25, 0x00	; 0
+ 308:	9f df       	rcall	.-194    	; 0x248 <FillRectangle>
+  FillRectangle(0,0,100,100,31,0,0);
+ 30a:	24 e6       	ldi	r18, 0x64	; 100
+ 30c:	30 e0       	ldi	r19, 0x00	; 0
+ 30e:	44 e6       	ldi	r20, 0x64	; 100
+ 310:	50 e0       	ldi	r21, 0x00	; 0
+ 312:	60 e0       	ldi	r22, 0x00	; 0
+ 314:	70 e0       	ldi	r23, 0x00	; 0
+ 316:	80 e0       	ldi	r24, 0x00	; 0
+ 318:	90 e0       	ldi	r25, 0x00	; 0
+ 31a:	96 df       	rcall	.-212    	; 0x248 <FillRectangle>
+  FillRectangle(140,0,320-140,100,31,0,0);
+ 31c:	24 e6       	ldi	r18, 0x64	; 100
+ 31e:	30 e0       	ldi	r19, 0x00	; 0
+ 320:	44 eb       	ldi	r20, 0xB4	; 180
+ 322:	50 e0       	ldi	r21, 0x00	; 0
+ 324:	60 e0       	ldi	r22, 0x00	; 0
+ 326:	70 e0       	ldi	r23, 0x00	; 0
+ 328:	8c e8       	ldi	r24, 0x8C	; 140
+ 32a:	90 e0       	ldi	r25, 0x00	; 0
+ 32c:	8d df       	rcall	.-230    	; 0x248 <FillRectangle>
+  FillRectangle(140,140,320-140,100,31,0,0);      
+ 32e:	24 e6       	ldi	r18, 0x64	; 100
+ 330:	30 e0       	ldi	r19, 0x00	; 0
+ 332:	44 eb       	ldi	r20, 0xB4	; 180
+ 334:	50 e0       	ldi	r21, 0x00	; 0
+ 336:	6c e8       	ldi	r22, 0x8C	; 140
+ 338:	70 e0       	ldi	r23, 0x00	; 0
+ 33a:	8c e8       	ldi	r24, 0x8C	; 140
+ 33c:	90 e0       	ldi	r25, 0x00	; 0
+ 33e:	84 df       	rcall	.-248    	; 0x248 <FillRectangle>
+  FillRectangle(0,239,320,240,0,0,0);
+ 340:	00 e0       	ldi	r16, 0x00	; 0
+ 342:	20 ef       	ldi	r18, 0xF0	; 240
+ 344:	30 e0       	ldi	r19, 0x00	; 0
+ 346:	40 e4       	ldi	r20, 0x40	; 64
+ 348:	51 e0       	ldi	r21, 0x01	; 1
+ 34a:	6f ee       	ldi	r22, 0xEF	; 239
+ 34c:	70 e0       	ldi	r23, 0x00	; 0
+ 34e:	80 e0       	ldi	r24, 0x00	; 0
+ 350:	90 e0       	ldi	r25, 0x00	; 0
+  
+  DisplayOn();
+ 352:	7a df       	rcall	.-268    	; 0x248 <FillRectangle>
+ 354:	e4 de       	rcall	.-568    	; 0x11e <DisplayOn>
+ 356:	ff cf       	rjmp	.-2      	; 0x356 <main+0x88>
 
-00000374 <__stop_program>:
- 374:	ff cf       	rjmp	.-2      	; 0x374 <__stop_program>
+00000358 <_exit>:
+ 358:	f8 94       	cli
+
+0000035a <__stop_program>:
+ 35a:	ff cf       	rjmp	.-2      	; 0x35a <__stop_program>

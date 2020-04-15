@@ -93,19 +93,11 @@ static void WriteData(unsigned int data)
 	//clean up??
 }
 
-void setBrightness(uint32_t parameter)
+void setBrightness(uint8_t parameter)
 {
-	if (parameter>=0 || parameter<=0xFF)
-	{
-		uint16_t command = 0x51;
-		WriteCommand(command);
-		WriteData(parameter);
-	} 
-	else
-	{
-		//de nada.
-	}
-
+	uint16_t command = 0x51;
+	WriteCommand(command);
+	WriteData(parameter);
 }
 
 
@@ -161,7 +153,7 @@ void DisplayInit()
 	// Set bit BGR (scanning direction)
 	MemoryAccessControl(0b00001000);
 	// 16 bits (2 bytes) per pixel
-	InterfacePixelFormat(0b00000101);
+	InterfacePixelFormat(0b01010101);
 	
 }
 
@@ -205,32 +197,27 @@ void MemoryWrite()
 	WriteCommand(command);
 }
 
-static bool isDataOk(rgbData_t* data)
+static bool isColorOk(rgbData_t* data)
 {
 	return ((data->red < 32) && (data->blue < 32) && (data->green < 64));
 }
 
-static uint16_t rgbDataToInt(rgbData_t* data)
+static uint16_t rgbToInt(rgbData_t* color)
 {
 	uint16_t dataInt = 0;
-	dataInt |= (uint16_t)data->blue;
-	dataInt |= ((uint16_t)data->green) << 5;
-	dataInt |= ((uint16_t)data->red) << 11;
+	dataInt |= (uint16_t)color->blue;
+	dataInt |= ((uint16_t)color->green) << 5;
+	dataInt |= ((uint16_t)color->red) << 11;
 	
 	return dataInt;
 }
 
 // Red 0-31, Green 0-63, Blue 0-31 // side 21 Lesson slides // side 78 datasheet
-void WritePixel(unsigned char Red, unsigned char Green, unsigned char Blue)
+void WritePixel(rgbData_t* color)
 {
-	rgbData_t data;
-	data.red = Red;
-	data.green = Green;
-	data.blue = Blue;
-	
-	if(isDataOk(&data))
+	if(isColorOk(&color))
 	{
-		WriteData(rgbDataToInt(&data));
+		WriteData(rgbToInt(&color));
 	}
 }
 
@@ -260,7 +247,7 @@ void SetPageAddress(unsigned int Start, unsigned int End)
 // (StartX,StartY) = Upper left corner. X horizontal (0-319) , Y vertical (0-239).
 // Height (1-240) is vertical. Width (1-320) is horizontal.
 // R-G-B = 5-6-5 bits.
-void FillRectangle(unsigned int StartX, unsigned int StartY, unsigned int Width, unsigned int Height, unsigned char Red, unsigned char Green, unsigned char Blue)
+void FillRectangle(unsigned int StartX, unsigned int StartY, unsigned int Width, unsigned int Height, rgbData_t* color)
 {
 	uint32_t i = 0;
 	SetPageAddress(StartX,(StartX+Width));
@@ -269,21 +256,7 @@ void FillRectangle(unsigned int StartX, unsigned int StartY, unsigned int Width,
 	
 	for(i = 0; i<(Width*Height); i++)
 	{
-		WritePixel(Red,Green,Blue);
-	}
-}
-
-void setBrightness(uint16_t parameter)
-{
-	if (parameter<=0xFF)
-	{
-		uint16_t command = 0b01010001;
-		WriteCommand(command);
-		WriteData(parameter);
-	}
-	else
-	{
-		//de nada.
+		WritePixel(rgbData_t* color);
 	}
 }
 
