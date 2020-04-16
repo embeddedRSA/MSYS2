@@ -10,6 +10,7 @@
 #include "rgb565.h"
 #include <util/delay.h>
 #include <string.h>
+#include "letters.h"
 
 typedef struct
 {
@@ -20,6 +21,7 @@ typedef struct
 
 static cursor_t myCursor;
 
+static rgb_t backgroundColor;
 
 static lcdDriverInterface_t myInterface;
 static bool initialized;
@@ -39,6 +41,11 @@ static void setColumnAddress(uint16_t Start, uint16_t End);
 static void setPageAddress(uint16_t Start, uint16_t End);
 static void drawRectangle(uint16_t Width, uint16_t Height);
 
+static void printCharById(uint8_t char_id);
+static void printString(char str[]);
+
+static void printTest();
+
 lcdDriverInterface_t* lcdDriver_getDriver()
 {
 	if(!initialized)
@@ -49,6 +56,7 @@ lcdDriverInterface_t* lcdDriver_getDriver()
 		myInterface.setCursorColor = setCursorColor;
 		myInterface.setCursor = setCursor;
 		myInterface.drawRectangle = drawRectangle;
+		myInterface.printTest = printTest;
 	}
 	return &myInterface;
 }
@@ -214,6 +222,57 @@ static void drawRectangle(uint16_t Width, uint16_t Height)
 	for(i = 0; i<((uint32_t)Width*(uint32_t)Height); i++)
 	{
 		writePixel(&myCursor.color);
+	}
+	writeCommand(0);
+}
+
+static void printTest()
+{
+	printString("Now this is some fancy shit, we gonna be rich boyz!!!");
+}
+
+static void printString(char str[])
+{
+	uint8_t i = 0;
+	for(i = 0; i<strlen(str); i++)
+	{
+		printCharById(((uint8_t)str[i])-32);
+		if(myCursor.x_position < 280)
+		{
+			myCursor.x_position += 13;
+		}
+		else if (myCursor.y_position < 210)
+		{
+			myCursor.y_position +=13;
+			myCursor.x_position = 10;
+		}
+	}
+}
+
+static void printCharById(uint8_t char_id)
+{
+	setPageAddress(myCursor.x_position,(myCursor.x_position+8));
+	setColumnAddress(myCursor.y_position,(myCursor.y_position+12));
+	memoryWrite();
+	backgroundColor = *rgb565FromInt(WHITE);
+
+	uint8_t bit = 0b10000000;
+	uint8_t i = 0;
+	uint8_t j = 0;
+	for(i = 0; i<8; i++)
+	{
+		for (j = 0; j<13; j++)
+		{
+			if(letters[char_id][12-j]&(bit>>i))
+			{
+				writePixel(&myCursor.color);
+			}
+			else
+			{
+				writePixel(&backgroundColor);
+			}
+		}
+		j = 0;
 	}
 	writeCommand(0);
 }

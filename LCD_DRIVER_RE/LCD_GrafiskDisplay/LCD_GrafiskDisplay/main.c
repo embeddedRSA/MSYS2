@@ -25,31 +25,14 @@ int main(void)
 	
 	screen->setCursorColor(rgb565FromInt(WHITE));
 	screen->drawRectangle(319,239);
-	screen->setCursorColor(rgb565FromInt(RED));
+	screen->setCursorColor(rgb565FromInt(BLACK));
+	screen->setCursor(50,50);
+	screen->printTest();
 	screen->displayON();
 	
 	
     while (1) 
     {
-		_delay_ms(300);
-		screen->setCursor(rand_lim(319-40),rand_lim(239-40));
-		screen->setCursorColor(rgb565FromInt(colors[rand_lim(2)]));
-		screen->drawRectangle(40,40);
     }
-}
-
-uint16_t rand_lim(uint16_t limit) 
-{
-/* return a random number between 0 and limit inclusive.
- */
-
-    uint16_t divisor = (uint16_t)(RAND_MAX/(limit+1));
-    uint16_t retval;
-
-    do { 
-        retval = (uint16_t)rand() / divisor;
-    } while (retval > limit);
-
-    return retval;
 }
 

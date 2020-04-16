@@ -25,6 +25,7 @@ typedef struct
 	colorFunction_t setCursorColor;
 	xyFunction_t setCursor;
 	xyFunction_t drawRectangle;
+	voidFunction_t printTest;
 	
 }lcdDriverInterface_t;
 
