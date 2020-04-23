@@ -27,7 +27,7 @@ void DisplayOn();
 void SleepOut();
 void enableBacklightControl(bool is_on);
 void enableCABC(bool enable);
-void setBrightness(uint16_t parameter);
+void setBrightness(uint8_t parameter);
 void MemoryAccessControl(unsigned char parameter);
 void InterfacePixelFormat(unsigned char parameter);
 void WritePixel(unsigned char Red, unsigned char Blue, unsigned char Green);
