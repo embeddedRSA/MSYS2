@@ -74,13 +74,13 @@ static void stop_s(void)
 static void enterWrite_s(void)
 {
 	
-	i2c->selectmode((ADDR_0<<1)&(~0b1));
+	i2c->selectmode(ADDR_0,I2C_WRITE_MODE);
 	
 }
 static void enterRead_s(void)
 {
 
-	i2c->selectmode((ADDR_0<<1)|0b1);
+	i2c->selectmode(ADDR_0,I2C_READ_MODE);
 	
 }
 static void selectRegister_s(reg_addr_t reg_addr)

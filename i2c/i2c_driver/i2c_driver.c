@@ -21,7 +21,7 @@ static uint16_t init_s(uint32_t SCL_f ,bool enable_interrupt);
 
 static void disable_s(void);
 
-static void selectMode_s(uint8_t SLA_x);
+static void selectMode_s(uint8_t SLA_x,I2C_MODE_t p_mode);
 
 static void start_s();
 
@@ -198,22 +198,28 @@ static void stop_s()
 
 /**
 -------------function description-----------------------------------------------------------
-static uint8_t selectMode_s(uint8_t SLA_x)
+static uint8_t selectMode_s(uint8_t SLA_addr,I2C_MODE_t p_mode)
 
-SLA_x: selects SLA+mode 
+SLA_addr: Slave SLA address 7bit
+p_mode: I2C_READ_MODE/I2C_WRITE_MODE   
 
 RET: void
 ----------------description-----------------------------------------------------------------
 is called after 'start_s()' selects address and R/W.
-THe adress is  7 bit address (x) and mode is R/W (y), an input could be: 'xxxxxxxy'
-W=0, R=1
-Will poll if interrupt is disabled
+THe adress is  7 bit address (x) and mode is I2C_READ_MODE or I2C_WRITE_MODE
 -------------function description end-------------------------------------------------------
 **/
-static void selectMode_s(uint8_t SLA_x) //SLA_x is SLA+R/W
+static void selectMode_s(uint8_t SLA_addr,I2C_MODE_t p_mode) //SLA_x is SLA+R/W
 {
 	//must send address now
-	TWDR=SLA_x;
+	if(p_mode==I2C_WRITE_MODE)
+	{
+		TWDR=((SLA_addr<<1)&(~0b1));
+	}
+	else if(p_mode==I2C_READ_MODE)
+	{
+		TWDR=((SLA_addr<<1)|(0b1));
+	}
 	TWCR |= (1<<TWINT);
 	TWCR |= (1<<TWINT)|(1<<TWSTA)|(1<<TWEN);
 	if (!int_is_enabled)

@@ -13,15 +13,23 @@
 #define SCL_MAX (uint32_t)400000
 #define F_CPU 16000000
 
+typedef enum
+{
+	I2C_WRITE_MODE,
+	I2C_READ_MODE
+}I2C_MODE_t;
+
+
 
 typedef void (*void_function_t)(void);
 typedef void (*void_RET_uint8_PAR)(uint8_t);
+typedef void (*void_RET_uint8_I2C_MODE_t_PAR)(uint8_t,I2C_MODE_t);
+typedef void	(*void_RET_bool_PAR)(bool);
 typedef uint8_t (*uint8_RET_uint8_PAR)(uint8_t);
 typedef uint8_t (*uint8_RET_bool_PAR)(bool);
 typedef uint8_t (*uint8_RET_void_PAR)(void);
 typedef uint16_t (*uint16_RET_uint32_bool_PAR)(uint32_t,bool);
 typedef bool	(*bool_RET_void_PAR)(void);
-typedef void	(*void_RET_bool_PAR)(bool);
 typedef bool	(*bool_RET_bool_PAR)(bool);
 
 
@@ -35,7 +43,7 @@ void_function_t start;
 
 void_function_t stop;
 
-void_RET_uint8_PAR selectmode;
+void_RET_uint8_I2C_MODE_t_PAR selectmode;
 
 void_RET_uint8_PAR write;
 
