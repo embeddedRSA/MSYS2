@@ -44,7 +44,9 @@ GA_t* get_GA_interface(i2c_t* i2c_interface)
 			GA_interface.write					=	write_s;
 			GA_interface.read					=	read_s;
 			GA_interface.getPitchRoll 			=	getPitchRoll_s;
-			GA_interface.getAccelXYZ			=	getAccelXYZ_s;			
+			GA_interface.getAccelXYZ			=	getAccelXYZ_s;	
+				
+			initialized=true;		
 	}
 	return &GA_interface; 
 }
