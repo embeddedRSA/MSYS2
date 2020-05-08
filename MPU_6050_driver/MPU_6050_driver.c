@@ -9,25 +9,32 @@
 #include "MPU_6050_driver.h"
 #include "../UART/uart.h"
 #include <math.h>
-
+#define  MS_SQR 9.80665
 #define PI_DIV_180 57.2957795130823
+
 //private member
-static i2c_t* i2c;
-static uint8_t currentAddr=1;
-static GA_data_struct data_struct;
-static GA_t GA_interface;
-static bool initialized = false;
+static i2c_t*			i2c;
+static uint8_t			currentAddr		=	1;
+static GA_data_struct	data_struct;
+static GA_t				GA_interface;
+static bool				initialized		=	false;
+static uint8_t			gyroRange;
+static uint8_t			accelRange;
 
-static uint8_t start_s(void);
-static void stop_s(void);
-static void enterWrite_s(void);
-static void enterRead_s(void);
-static void selectRegister_s(reg_addr_t reg_addr);
-static void write_s(uint8_t data);
-static uint8_t read_s(bool is_last);
-static void getPitchRoll_s(double *pitchRoll);
-static void getAccelXYZ_s(int16_t* XYZ);
-
+static uint8_t	s_start(void);
+static void		s_stop(void);
+static void		s_enterWrite(void);
+static void		s_enterRead(void);
+static void		s_selectRegister(reg_addr_t reg_addr);
+static void		s_write(uint8_t data);
+static uint8_t	s_read(bool is_last);
+static void		s_getPitchRoll(int16_t *pitchRoll);
+static void		s_getAccelXYZ(int16_t* XYZ);
+static void		s_getGyroXYZ(int16_t* XYZ);
+static void		s_gatherData(void);
+static void		s_gyroSettings(uint8_t p_range);
+static void		s_accerelSettings(uint8_t p_range);
+static void		s_reset(void);
 
 GA_t* get_GA_interface(i2c_t* i2c_interface)
 {
@@ -36,65 +43,120 @@ GA_t* get_GA_interface(i2c_t* i2c_interface)
 	{
 		i2c=i2c_interface;
 		
-			GA_interface.start					=	start_s;
-			GA_interface.stop					=	stop_s;
-			GA_interface.enterWrite				=	enterWrite_s;
-			GA_interface.enterRead				=	enterRead_s;
-			GA_interface.selectRegister			=	selectRegister_s;
-			GA_interface.write					=	write_s;
-			GA_interface.read					=	read_s;
-			GA_interface.getPitchRoll 			=	getPitchRoll_s;
-			GA_interface.getAccelXYZ			=	getAccelXYZ_s;	
-				
+			GA_interface.start					=	s_start;
+			GA_interface.stop					=	s_stop;
+			GA_interface.enterWrite				=	s_enterWrite;
+			GA_interface.enterRead				=	s_enterRead;
+			GA_interface.selectRegister			=	s_selectRegister;
+			GA_interface.write					=	s_write;
+			GA_interface.read					=	s_read;
+			GA_interface.getPitchRoll 			=	s_getPitchRoll;
+			GA_interface.getAccelXYZ			=	s_getAccelXYZ;
+			GA_interface.getGyroXYZ				=	s_getGyroXYZ;
+			GA_interface.gatherData				=	s_gatherData;
+			GA_interface.gyroSettings			=	s_gyroSettings;
+			GA_interface.accerelSettings		=	s_accerelSettings;
+			GA_interface.reset					=	s_reset;
 			initialized=true;		
 	}
 	return &GA_interface; 
 }
 
-static uint8_t start_s(void)
+static void s_gatherData(void)
+{
+	int i=0;
+	s_start();
+	s_enterWrite();
+	s_selectRegister(ACCEL_XOUT_H);
+	s_start();
+	s_enterRead();
+	
+	for(i=0;i<14;++i)
+	{
+		if(i==13)
+		{
+			s_read(true);
+		}
+		else
+		{
+			s_read(false);
+		}
+	}
+	s_stop();
+}
+
+static void s_gyroSettings(uint8_t p_range)
+{
+	if (p_range<=3)
+	{
+		gyroRange = p_range;
+		s_start();
+		s_enterWrite();
+		s_selectRegister(27);
+		s_write(accelRange<<3);
+		s_stop();
+	}
+}
+
+static void s_accerelSettings(uint8_t p_range)
+{
+//4g right now
+	if (p_range<=3)
+	{
+		accelRange = p_range;
+		s_start();
+		s_enterWrite();
+		s_selectRegister(28);
+		s_write(accelRange<<3);
+		s_stop();
+	}
+
+}
+
+
+
+static void s_reset(void)
+{
+	s_start();
+	s_enterWrite();
+	s_selectRegister(0x6B);
+	s_write(0x00);
+	s_stop();
+}
+
+
+static uint8_t s_start(void)
 {
 	i2c->start();
 	return 1;
-	/**
-	if ((i2c->getBusy)==false)
-	{
-		//i2c->setBusy(true);
-		i2c->start();
-		return 1;
-	}
-	else
-	{
-		//if busy
-		return 0;
-	}
-	**/
+
 }
-static void stop_s(void)
+static void s_stop(void)
 {
 	i2c->stop();
 }
-static void enterWrite_s(void)
+static void s_enterWrite(void)
 {
 	
 	i2c->selectmode(ADDR_0,I2C_WRITE_MODE);
 	
 }
-static void enterRead_s(void)
+static void s_enterRead(void)
 {
 
 	i2c->selectmode(ADDR_0,I2C_READ_MODE);
 	
 }
-static void selectRegister_s(reg_addr_t reg_addr)
+static void s_selectRegister(reg_addr_t reg_addr)
 {
 	currentAddr=reg_addr;
 	i2c->write(reg_addr);
 }
-static void write_s(uint8_t data)
+static void s_write(uint8_t data)
 {
 	i2c->write(data);
 }
-static uint8_t read_s(bool is_last)
+static uint8_t s_read(bool is_last)
 {
 	int16_t temp=i2c->read(is_last);
 	
@@ -170,17 +232,26 @@ static uint8_t read_s(bool is_last)
 return temp;
 }
 
-static void getAccelXYZ_s(int16_t* XYZ)
+static void s_getAccelXYZ(int16_t* XYZ)
 {
 XYZ[0]=(int16_t)((data_struct.accel_x)/8.192);
 XYZ[1]=(int16_t)((data_struct.accel_y)/8.192);
 XYZ[2]=(int16_t)((data_struct.accel_z)/8.192);
 }
 
-static void getPitchRoll_s(double *pitchRoll)
+static void s_getGyroXYZ(int16_t* XYZ)
+{
+	XYZ[0]=(int16_t)((data_struct.gyro_x)/8.192);
+	XYZ[1]=(int16_t)((data_struct.gyro_y)/8.192);
+	XYZ[2]=(int16_t)((data_struct.gyro_z)/8.192);
+}
+
+static void s_getPitchRoll(int16_t *pitchRoll)
 {	
-		pitchRoll[0] = (atan(((data_struct.accel_y)/16384.0) / sqrt(pow(((data_struct.accel_x)/16384.0), 2) + pow(((data_struct.accel_z)/16384), 2))) * PI_DIV_180) - 0.58;
-	pitchRoll[1] = (atan((-1.0*(data_struct.accel_x)/16384.0) / sqrt(pow(((data_struct.accel_y)/16384.0), 2) + pow(((data_struct.accel_z)/16384), 2))) * PI_DIV_180) + 0.58;
+	pitchRoll[0] = (int16_t)((atan2(((data_struct.accel_y)/8192.0),((data_struct.accel_z)/8192.0)))*PI_DIV_180);
+	pitchRoll[1] = (int16_t)((atan2((-1.0 * (data_struct.accel_x)/8192.0) , sqrt(((data_struct.accel_y)/8192.0) * ((data_struct.accel_y)/8192.0) + ((data_struct.accel_z)/8192.0) * ((data_struct.accel_z)/8192.0))))*PI_DIV_180);
+  //pitchRoll[0] = (int16_t)(((atan(((data_struct.accel_y)/16384.0) / sqrt(pow(((data_struct.accel_x)/16384.0), 2) + pow(((data_struct.accel_z)/16384.0), 2))) * PI_DIV_180) - 0.58)*1000);
+  //pitchRoll[1] = (int16_t)(((atan((-1.0*(data_struct.accel_x)/16384.0) / sqrt(pow(((data_struct.accel_y)/16384.0), 2) + pow(((data_struct.accel_z)/16384.0), 2))) * PI_DIV_180) + 0.58)*1000);
 }
 
 
