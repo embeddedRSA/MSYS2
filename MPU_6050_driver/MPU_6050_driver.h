@@ -49,6 +49,7 @@ typedef uint8_t (*uint8_RET_bool_PAR)(bool);
 typedef uint8_t (*uint8_RET_void_PAR)(void);
 typedef uint8_t (*uint8_RET_uint8_bool_PAR)(uint16_t,bool);
 typedef void (*void_RET_doubleptr_PAR)(double*);
+typedef void (*void_RET_int32ptr_PAR)(int32_t*);
 typedef void (*void_RET_int16ptr_PAR)(int16_t*);
 
 
@@ -62,8 +63,8 @@ typedef struct
 	void_RET_uint8_PAR		write;
 	uint8_RET_bool_PAR		read;
 	void_RET_int16ptr_PAR	getPitchRoll;
-	void_RET_int16ptr_PAR	getAccelXYZ;	
-	void_RET_int16ptr_PAR	getGyroXYZ;
+	void_RET_int32ptr_PAR	getAccelXYZ;	
+	void_RET_int32ptr_PAR	getGyroXYZ;
 	void_function_t			gatherData;
 	void_RET_uint8_PAR		gyroSettings;
 	void_RET_uint8_PAR		accerelSettings;

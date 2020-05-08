@@ -9,18 +9,21 @@
 #include "MPU_6050_driver.h"
 #include "../UART/uart.h"
 #include <math.h>
-#define  MS_SQR 9.80665
-#define PI_DIV_180 57.2957795130823
+#define ACCEL_SETTING_REG 28
+#define GYRO_SETTING_REG 27
+#define MS_SQR		9.80665
+#define PI_DIV_180	57.2957795130823
 
 //private member
 static i2c_t*			i2c;
-static uint8_t			currentAddr		=	1;
+static uint8_t			currentAddr			=	1;
 static GA_data_struct	data_struct;
 static GA_t				GA_interface;
-static bool				initialized		=	false;
-static uint8_t			gyroRange;
-static uint8_t			accelRange;
-
+static bool				initialized			=	false;
+static uint8_t			s_gyroRange;
+static uint8_t			s_accelRange;
+static double			s_scalefact_accel	=	0;
+static double			s_scalefact_gyro	=	0;
 static uint8_t	s_start(void);
 static void		s_stop(void);
 static void		s_enterWrite(void);
@@ -29,8 +32,8 @@ static void		s_selectRegister(reg_addr_t reg_addr);
 static void		s_write(uint8_t data);
 static uint8_t	s_read(bool is_last);
 static void		s_getPitchRoll(int16_t *pitchRoll);
-static void		s_getAccelXYZ(int16_t* XYZ);
-static void		s_getGyroXYZ(int16_t* XYZ);
+static void		s_getAccelXYZ(int32_t* XYZ);
+static void		s_getGyroXYZ(int32_t* XYZ);
 static void		s_gatherData(void);
 static void		s_gyroSettings(uint8_t p_range);
 static void		s_accerelSettings(uint8_t p_range);
@@ -89,12 +92,33 @@ static void s_gyroSettings(uint8_t p_range)
 {
 	if (p_range<=3)
 	{
-		gyroRange = p_range;
+		s_gyroRange = p_range;
 		s_start();
 		s_enterWrite();
-		s_selectRegister(27);
-		s_write(accelRange<<3);
+		s_selectRegister(GYRO_SETTING_REG);
+		s_write(s_gyroRange<<3);
 		s_stop();
+		
+		switch (s_gyroRange)
+		{
+		case 0:
+			s_scalefact_gyro = 131.0;	
+		break;
+		case 1:
+			s_scalefact_gyro = 65.5;	
+		break;
+		case 2:
+			s_scalefact_gyro = 32.8;	
+		break;
+		case 3:
+			s_scalefact_gyro = 16.4;
+		break;
+		
+		default:
+		//do nothing 
+		break;
+			
+		}
 	}
 }
 
@@ -103,12 +127,34 @@ static void s_accerelSettings(uint8_t p_range)
 //4g right now
 	if (p_range<=3)
 	{
-		accelRange = p_range;
+		s_accelRange = p_range;
 		s_start();
 		s_enterWrite();
-		s_selectRegister(28);
-		s_write(accelRange<<3);
+		s_selectRegister(ACCEL_SETTING_REG);
+		s_write(s_accelRange<<3);
 		s_stop();
+		
+	switch (s_accelRange)
+	{
+		case 0:
+		s_scalefact_accel = 16384.0;
+		break;
+		case 1:
+		s_scalefact_accel = 8192.0;
+		break;
+		case 2:
+		s_scalefact_accel = 4096.0;
+		break;
+		case 3:
+		s_scalefact_accel = 2048.0;
+		break;
+		
+		default:
+		//do nothing
+		break;
+		
+	}
+	
 	}
 
 }
@@ -232,27 +278,40 @@ static uint8_t s_read(bool is_last)
 return temp;
 }
 
-static void s_getAccelXYZ(int16_t* XYZ)
+static void s_getAccelXYZ(int32_t* XYZ)
 {
-XYZ[0]=(int16_t)((data_struct.accel_x)/8.192);
-XYZ[1]=(int16_t)((data_struct.accel_y)/8.192);
-XYZ[2]=(int16_t)((data_struct.accel_z)/8.192);
+	//return mG
+	XYZ[0]=(int32_t)((data_struct.accel_x)/(s_scalefact_accel/1000.0));
+	XYZ[1]=(int32_t)((data_struct.accel_y)/(s_scalefact_accel/1000.0));
+	XYZ[2]=(int32_t)((data_struct.accel_z)/(s_scalefact_accel/1000.0));
+
+	
+	////return mm/s^2
+	//XYZ[0]=(int32_t)(MS_SQR*(data_struct.accel_x)/(s_scalefact_accel/1000.0));
+	//XYZ[1]=(int32_t)(MS_SQR*(data_struct.accel_y)/(s_scalefact_accel/1000.0));
+	//XYZ[2]=(int32_t)(MS_SQR*(data_struct.accel_z)/(s_scalefact_accel/1000.0));
 }
 
-static void s_getGyroXYZ(int16_t* XYZ)
+static void s_getGyroXYZ(int32_t* XYZ)
 {
-	XYZ[0]=(int16_t)((data_struct.gyro_x)/8.192);
-	XYZ[1]=(int16_t)((data_struct.gyro_y)/8.192);
-	XYZ[2]=(int16_t)((data_struct.gyro_z)/8.192);
+	//return in deg/s
+	XYZ[0]=(int32_t)((data_struct.gyro_x)/(s_scalefact_gyro));
+	XYZ[1]=(int32_t)((data_struct.gyro_y)/(s_scalefact_gyro));
+	XYZ[2]=(int32_t)((data_struct.gyro_z)/(s_scalefact_gyro));
 }
 
 static void s_getPitchRoll(int16_t *pitchRoll)
 {	
-	pitchRoll[0] = (int16_t)((atan2(((data_struct.accel_y)/8192.0),((data_struct.accel_z)/8192.0)))*PI_DIV_180);
-	pitchRoll[1] = (int16_t)((atan2((-1.0 * (data_struct.accel_x)/8192.0) , sqrt(((data_struct.accel_y)/8192.0) * ((data_struct.accel_y)/8192.0) + ((data_struct.accel_z)/8192.0) * ((data_struct.accel_z)/8192.0))))*PI_DIV_180);
-  //pitchRoll[0] = (int16_t)(((atan(((data_struct.accel_y)/16384.0) / sqrt(pow(((data_struct.accel_x)/16384.0), 2) + pow(((data_struct.accel_z)/16384.0), 2))) * PI_DIV_180) - 0.58)*1000);
-  //pitchRoll[1] = (int16_t)(((atan((-1.0*(data_struct.accel_x)/16384.0) / sqrt(pow(((data_struct.accel_y)/16384.0), 2) + pow(((data_struct.accel_z)/16384.0), 2))) * PI_DIV_180) + 0.58)*1000);
+	pitchRoll[0] = (int16_t)((atan2(((data_struct.accel_y)/s_scalefact_accel),((data_struct.accel_z)/s_scalefact_accel)))*PI_DIV_180);
+	pitchRoll[1] = (int16_t)((atan2((-1.0 * (data_struct.accel_x)/s_scalefact_accel) , sqrt(((data_struct.accel_y)/s_scalefact_accel) * ((data_struct.accel_y)/s_scalefact_accel) 
+					+ ((data_struct.accel_z)/s_scalefact_accel) * ((data_struct.accel_z)/s_scalefact_accel))))*PI_DIV_180);
+
+
+
 }
+
+
+
 
 
 

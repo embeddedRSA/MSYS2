@@ -55,11 +55,12 @@ int main(void)
 	
 //Set to +- 4G
 	GA_obj->reset();
-	GA_obj->accerelSettings(0);
-	GA_obj->gyroSettings(0);
+	GA_obj->accerelSettings(3);
+	GA_obj->gyroSettings(3);
 	
 
-	int16_t data[3];
+	int32_t acceldata[3];
+	int32_t gyrodata[3];
 	int16_t dataPR[2];
     while (1) 
     {
@@ -68,22 +69,38 @@ int main(void)
 	GA_obj->gatherData();
    
 	//char outstring[10];
-	GA_obj->getGyroXYZ(data);
+	GA_obj->getGyroXYZ(gyrodata);
+	GA_obj->getAccelXYZ(acceldata);
 	GA_obj->getPitchRoll(dataPR);
+
+
+SendString(UARTADDR,"GYRO X: ");
+SendInteger(UARTADDR, gyrodata[0]);
+SendString(UARTADDR,"deg/s Y: ");
+SendInteger(UARTADDR, gyrodata[1]);
+SendString(UARTADDR,"deg/s Z: ");
+SendInteger(UARTADDR, gyrodata[2]);
+SendString(UARTADDR,"deg/s \n");
+
+
+
 /*
-SendString(UARTADDR,"Gyro X: ");
-SendInteger(UARTADDR, data[0]);
-SendString(UARTADDR," Y: ");
-SendInteger(UARTADDR, data[1]);
-SendString(UARTADDR," Z: ");
-SendInteger(UARTADDR, data[2]);
+SendString(UARTADDR,"Accel X: ");
+SendInteger(UARTADDR, acceldata[0]);
+SendString(UARTADDR,"mG Y: ");
+SendInteger(UARTADDR, acceldata[1]);
+SendString(UARTADDR,"mG Z: ");
+SendInteger(UARTADDR, acceldata[2]);
+SendString(UARTADDR,"mG \n");
 */
+/*
 SendString(UARTADDR,"\n");
 SendString(UARTADDR,"Pitch Roll: X: ");
 SendInteger(UARTADDR, dataPR[0]);
 SendString(UARTADDR,"deg Y: ");
 SendInteger(UARTADDR, dataPR[1]);
 SendString(UARTADDR,"deg\n");
+*/
 /**
 if (data[2]>3800 ||data[2]<(-3800))
 {
