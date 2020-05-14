@@ -9,9 +9,6 @@
 #ifndef LIGHTDRIVER_H_
 #define LIGHTDRIVER_H_
 
-// void initLightDriver(void); //initializes the timers.
-// void setFrontlight(unsigned char percent); //Takes char percent 0-100, outputs PWM on port PH4 
-// void setBacklight(unsigned char percent); //Takes char percent 0-100, outputs PWM on port PH5 
 
 typedef void (*void_RET_void_PAR) (void);
 typedef void (*void_RET_unsigned_char) (unsigned char);
