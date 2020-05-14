@@ -3,11 +3,11 @@
 #include "ADC_MEGA2560.h"
 #include <avr/io.h>
 #include <stdbool.h>
-static ADC_t ADC_interface;
-static bool initialized = false;
 
-static ADC_REF ref_type;
-static float Ref_V=0;
+static ADC_t s_ADC_interface;
+static bool s_initialized = false;
+static ADC_REF s_ref_type;
+static float s_Ref_V=0;
 
 
 static void s_initADC(ADC_REF reff_vol, float p_aRef);
@@ -16,18 +16,19 @@ static uint8_t s_get_ADCL(void);
 static uint8_t s_get_ADCH(void);
 static uint16_t s_getFullADC(uint8_t p_pin_no);
 static int16_t s_getADC_mV(uint8_t p_pin_no);
+static void s_setADCPin(uint8_t p_pin_no);
 
 
 ADC_t* get_ADC_interface()
 {
-	if (!initialized)
+	if (!s_initialized)
 	{
-		ADC_interface.initADC				=	s_initADC;
-		ADC_interface.getFullADC			=	s_getFullADC;
-		ADC_interface.getADC_mV				=	s_getADC_mV;
-		initialized							=	true;	
+		s_ADC_interface.initADC				=	s_initADC;
+		s_ADC_interface.getFullADC			=	s_getFullADC;
+		s_ADC_interface.getADC_mV				=	s_getADC_mV;
+		s_initialized							=	true;	
 	}
-	return &ADC_interface;
+	return &s_ADC_interface;
 }
 
 static void s_initADC(ADC_REF p_reff_vol, float p_aRef)
@@ -43,11 +44,11 @@ static void s_initADC(ADC_REF p_reff_vol, float p_aRef)
 	
 	//ADCSRA |= (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN);
 	//selecting ref
-	ref_type=p_reff_vol;
-	switch (ref_type) {
+	s_ref_type=p_reff_vol;
+	switch (s_ref_type) {
 		case AREF:
 		ADMUX&=0b00111111;
-		Ref_V=p_aRef;
+		s_Ref_V=p_aRef;
 		break;
 
 		case AVCC:
@@ -92,12 +93,12 @@ else if ((p_pin_no>7) && (p_pin_no<16))
 }
 
 
-static uint8_t s_get_ADCL()
+static uint8_t s_get_ADCL(void)
 {
 	return (uint8_t) ADCL;
 }
 
-static uint8_t s_get_ADCH()
+static uint8_t s_get_ADCH(void)
 {
 	return (uint8_t) ADCH;
 }
@@ -122,9 +123,9 @@ static int16_t s_getADC_mV(uint8_t p_pin_no)
 	 uint16_t temp,out_f;
 	 temp= (uint16_t)((s_getFullADC(p_pin_no)/1024.0)*1000);  // 10 BIT res and scale to mV
 	 
-	 switch (ref_type) {
+	 switch (s_ref_type) {
 		 case AREF:
-		 out_f= temp*Ref_V;
+		 out_f= temp*s_Ref_V;
 		 break;
 
 		 case AVCC:

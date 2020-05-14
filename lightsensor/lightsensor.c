@@ -6,12 +6,11 @@
  */ 
 
 #include "lightsensor.h"
-static LightSensor_t LightSensorInterface;
-static ADC_t *ADC_interface;
-static bool initialized = false;
-
-static uint8_t pin_no;
-uint16_t light_threshold;
+static LightSensor_t s_LightSensorInterface;
+static ADC_t *		 s_ADC_interface;
+static bool			 s_initialized = false;
+static uint8_t		 s_pin_no;
+static uint16_t		 s_light_threshold;
 
 
 static void s_init(uint8_t p_pin_no, uint16_t p_threshold);
@@ -19,27 +18,27 @@ static bool s_getLightStatus(void);
  
  LightSensor_t *get_lightSensor_interface(ADC_t * p_ADC_Interface)
  {
-	if (!initialized)
-	{	ADC_interface								=	p_ADC_Interface;
+	if (!s_initialized)
+	{	s_ADC_interface									=	p_ADC_Interface;
 		
-		LightSensorInterface.init					=	s_init;
-		LightSensorInterface.getLightStatus			=	s_getLightStatus;
+		s_LightSensorInterface.init						=	s_init;
+		s_LightSensorInterface.getLightStatus			=	s_getLightStatus;
 		
-		initialized									=	true;
+		s_initialized									=	true;
 	}
-	return &LightSensorInterface;	 
+	return &s_LightSensorInterface;	 
  }
  
  static void s_init(uint8_t p_pin_no, uint16_t p_threshold)
  {
-	light_threshold		=	p_threshold;
-	pin_no				=	p_pin_no;
+	s_light_threshold	=	p_threshold;
+	s_pin_no			=	p_pin_no;
  
  }
  
  static bool s_getLightStatus(void)
  {
-	if(ADC_interface->getADC_mV(pin_no)>=light_threshold)
+	if(s_ADC_interface->getADC_mV(s_pin_no)>=s_light_threshold)
 	{
 	return false;
 	}
