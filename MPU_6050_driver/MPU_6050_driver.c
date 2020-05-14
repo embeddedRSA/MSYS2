@@ -306,7 +306,7 @@ static void s_getPitchRoll(int16_t *pitchRoll)
 	pitchRoll[1] = (int16_t)((atan2((-1.0 * (data_struct.accel_x)/s_scalefact_accel) , sqrt(((data_struct.accel_y)/s_scalefact_accel) * ((data_struct.accel_y)/s_scalefact_accel) 
 					+ ((data_struct.accel_z)/s_scalefact_accel) * ((data_struct.accel_z)/s_scalefact_accel))))*PI_DIV_180);
 
-
+//https://wiki.dfrobot.com/How_to_Use_a_Three-Axis_Accelerometer_for_Tilt_Sensing
 
 }
 

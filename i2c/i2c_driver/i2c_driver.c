@@ -105,29 +105,51 @@ if (SCL_f <= 400000)
 	}
 	
 	//constants pre calculated from mathcad 
-	uint16_t TWBR_1=1;
+			
+		uint8_t TWBR_1= (uint8_t)((F_CPU/(8.0*SCL_f))-2.0);
+
+
+		uint8_t validation = 0xFF;
+
+		if(TWBR_1>0 && TWBR_1<=validation )
+		{
+			//set prescaler
+
+			TWSR&=~(1<<TWPS0);
+			TWSR&=~(1<<TWPS1);
+			//typecast to proper format and insert
+			TWBR = TWBR_1;
+			return TWBR;
+		}
+
+		else
+		{
+			return 0; //return 0 error
+		}
 	
 	
-	if(SCL_f==400000)
-	{
-		TWBR_1= 3;
-	}
-	else if(SCL_f>=333333)
-	{
-		TWBR_1= 4;
-	}
-	else if(SCL_f>=5000)
-	{
-		TWBR_1= 398;
-	}
-	else if(SCL_f>=2000)
-	{
-		TWBR_1= 1998;
-	}
-	else if(SCL_f>=1000)
-	{
-		TWBR_1= 998;
-	}
+	
+	
+//	if(SCL_f==400000)
+//	{
+//		TWBR_1= 3;
+//	}
+//	else if(SCL_f>=333333)
+//	{
+//		TWBR_1= 4;
+//	}
+//	else if(SCL_f>=5000)
+//	{
+//		TWBR_1= 398;
+//	}
+//	else if(SCL_f>=2000)
+//	{
+//		TWBR_1= 1998;
+//	}
+//	else if(SCL_f>=1000)
+//	{
+//		TWBR_1= 998;
+//	}
 
 	TWSR&=~(1<<TWPS0);
 	TWSR&=~(1<<TWPS1);

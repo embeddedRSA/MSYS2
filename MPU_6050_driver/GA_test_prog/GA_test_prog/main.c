@@ -50,7 +50,7 @@ int main(void)
 	GA_obj=get_GA_interface(i2c_obj);
 	
 	SendString(UARTADDR,"init i2c: ");
-	SendInteger(UARTADDR,i2c_obj->init(10000,false));
+	SendInteger(UARTADDR,i2c_obj->init(120000,false));
 	SendString(UARTADDR,"\n");	
 	
 //Set to +- 4G
@@ -64,7 +64,7 @@ int main(void)
 	int16_t dataPR[2];
     while (1) 
     {
-	_delay_ms(250);
+	_delay_ms(5000);
 	
 	GA_obj->gatherData();
    
