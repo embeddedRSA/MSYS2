@@ -7,6 +7,7 @@
 
 #include "lightDriver.h"
 #include <avr/io.h>
+static uint8_t init=0;
 
 //Private variables 
 static lightDriver_t lD_interface;
@@ -19,10 +20,12 @@ static void setBacklight(unsigned char percent);
  
  lightDriver_t* get_lightDriverInterface(void)
  {
-	 lD_interface.init=initLightDriver;
-	 lD_interface.setFront=setFrontlight;
-	 lD_interface.setBack=setBacklight;
-	 
+	 if (!init)
+	 {
+		 lD_interface.init=initLightDriver;
+		 lD_interface.setFront=setFrontlight;
+		 lD_interface.setBack=setBacklight;
+	 }
 	 return &lD_interface;
  }
 

@@ -27,10 +27,10 @@ int main(void)
 		LD_Obj->setBack(0);
 		_delay_ms(4000);
 		LD_Obj->setFront(50);
-		LD_Obj->setBack=50;
+		LD_Obj->setBack(50);
 		_delay_ms(4000);
-		LD_Obj->setFront=100;
-		LD_Obj->setBack=100;
+		LD_Obj->setFront(100);
+		LD_Obj->setBack(100);
 		_delay_ms(4000);
 				
     }

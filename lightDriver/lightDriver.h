@@ -24,6 +24,6 @@ typedef struct
 	
 }lightDriver_t;
 
-lightDriver_t* get_lightDriverInterface(void);
+lightDriver_t *get_lightDriverInterface(void);
 
 #endif /* LIGHTDRIVER_H_ */
