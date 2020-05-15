@@ -9,33 +9,33 @@
 #include <util/delay.h>
 
 //private vars
-static i2c_t i2c_interface;
-static bool int_is_enabled=false;
-static bool initialized=false;
-static bool busy_flag=false;
+static i2c_t s_i2c_interface;
+static bool s_int_is_enabled=false;
+static bool s_initialized=false;
+static bool s_busy_flag=false;
 
 
 //prototypes
 		
-static uint16_t init_s(uint32_t SCL_f ,bool enable_interrupt);
+static uint16_t s_init(uint32_t SCL_f ,bool enable_interrupt);
 
-static void disable_s(void);
+static void s_disable(void);
 
-static void selectMode_s(uint8_t SLA_x,I2C_MODE_t p_mode);
+static void s_selectMode(uint8_t p_SLA_x,I2C_MODE_t p_mode);
 
-static void start_s();
+static void s_start(void);
 
-static void stop_s();
+static void s_stop(void);
 
-static void write_s(uint8_t data);
+static void s_write(uint8_t p_data);
 
-static uint8_t read_s(bool isLast);
+static uint8_t s_read(bool p_isLast);
 
-static bool setBusy_s(bool status);
+static bool s_setBusy(bool p_status);
 
-static bool getBusy_s(void);
+static bool s_getBusy(void);
 
-static uint8_t getStatus_s(void);
+static uint8_t s_getStatus(void);
 
 /**
 -------------function description-----------------------------------------------------------
@@ -50,28 +50,28 @@ sets struct pointer functions, can be called several times to return pointer, or
 i2c_t* get_i2c_interface(void)
 {
 	
- if (!initialized)
+ if (!s_initialized)
  {
-	i2c_interface.init				=	init_s;
-	i2c_interface.disable			=	disable_s;
-	i2c_interface.start				=	start_s;
-	i2c_interface.stop				=	stop_s;
-	i2c_interface.selectmode		=	selectMode_s;
-	i2c_interface.write				=	write_s;
-	i2c_interface.read				=	read_s;
-	i2c_interface.setBusy			=	setBusy_s;
-	i2c_interface.getBusy			=	getBusy_s;
-	i2c_interface.getStatus			=	getStatus_s;
-	initialized=true;
+	s_i2c_interface.init				=	s_init;
+	s_i2c_interface.disable				=	s_disable;
+	s_i2c_interface.start				=	s_start;
+	s_i2c_interface.stop				=	s_stop;
+	s_i2c_interface.selectmode			=	s_selectMode;
+	s_i2c_interface.write				=	s_write;
+	s_i2c_interface.read				=	s_read;
+	s_i2c_interface.setBusy				=	s_setBusy;
+	s_i2c_interface.getBusy				=	s_getBusy;
+	s_i2c_interface.getStatus			=	s_getStatus;
+	s_initialized=true;
 	
  }
-	return &i2c_interface;
+	return &s_i2c_interface;
 }
 
 
 /**
 -------------function description-----------------------------------------------------------
-static uint8_t init_s(uint16_t SCL_f ,bool enable_interrupt)
+static uint16_t s_init(uint32_t p_SCL_f ,bool p_enable_interrupt) //freq is given in Hz
 
 	SCL_f: frequency that should be approximated
 
@@ -85,11 +85,11 @@ this is also where polling is enabled by setting enable_interrupt = false.
 is implemented 
 -------------function description end-------------------------------------------------------
 **/
-static uint16_t init_s(uint32_t SCL_f ,bool enable_interrupt) //freq is given in Hz
+static uint16_t s_init(uint32_t p_SCL_f ,bool p_enable_interrupt) //freq is given in Hz
 {
 	
 	//no internal pull up implemented so far
-if (SCL_f <= 400000)
+if (p_SCL_f <= 400000)
 	{
 		//enable TWI clock module 
 	PRR0&=~(1<<PRTWI);
@@ -98,15 +98,15 @@ if (SCL_f <= 400000)
 	TWCR|=(1<<TWEN);	
 	
 	//enable interrupt
-	int_is_enabled=enable_interrupt;
-	if (int_is_enabled)
+	s_int_is_enabled=p_enable_interrupt;
+	if (s_int_is_enabled)
 	{
 		TWCR|=(1<<TWIE);
 	}
 	
 	//constants pre calculated from mathcad 
 			
-		uint8_t TWBR_1= (uint8_t)((F_CPU/(8.0*SCL_f))-2.0);
+		uint8_t TWBR_1= (uint8_t)((F_CPU/(8.0*p_SCL_f))-2.0);
 
 
 		uint8_t validation = 0xFF;
@@ -127,53 +127,23 @@ if (SCL_f <= 400000)
 			return 0; //return 0 error
 		}
 	
-	
-	
-	
-//	if(SCL_f==400000)
-//	{
-//		TWBR_1= 3;
-//	}
-//	else if(SCL_f>=333333)
-//	{
-//		TWBR_1= 4;
-//	}
-//	else if(SCL_f>=5000)
-//	{
-//		TWBR_1= 398;
-//	}
-//	else if(SCL_f>=2000)
-//	{
-//		TWBR_1= 1998;
-//	}
-//	else if(SCL_f>=1000)
-//	{
-//		TWBR_1= 998;
-//	}
-
-	TWSR&=~(1<<TWPS0);
-	TWSR&=~(1<<TWPS1);
-	
-	
-	TWBR = TWBR_1;
-	return TWBR_1;
 	}
 else
 	{
-	return 69;
+	return 99;
 	}
 }
 
 /**
 -------------function description-----------------------------------------------------------
-static void disable_s(void)
+static void s_disable(void)
 
 RET: void
 ----------------description-----------------------------------------------------------------
 Disables any i2c activity, activity, 'init_s()' does not need to be followed before starting new transfer
 -------------function description end-------------------------------------------------------
 **/
-static void disable_s(void)
+static void s_disable(void)
 {
 		//TWCR|=(1<<TWEN);	
 }
@@ -182,7 +152,7 @@ static void disable_s(void)
 
 /**
 -------------function description-----------------------------------------------------------
-static void start_s(void)
+static void s_start(void)
 
 RET: void
 ----------------description-----------------------------------------------------------------
@@ -191,12 +161,12 @@ can be called several times without calling stop, a new mode may even be selecte
 Will poll if interrupt is disabled
 -------------function description end-------------------------------------------------------
 **/
-static void start_s(void)
+static void s_start(void)
 {
 	TWCR=0;
 	TWCR |= (1<<TWSTA)|(1<<TWEN)|(1<<TWINT); //TWSTA sends start bit 
 
-	if (!int_is_enabled)
+	if (!s_int_is_enabled)
 	{
 		while ((TWCR & (1<<TWINT)) == 0)
 		{}
@@ -206,21 +176,21 @@ static void start_s(void)
 
 /**
 -------------function description-----------------------------------------------------------
-static void stop_s()
+static void s_stop()
 
 RET: void
 ----------------description-----------------------------------------------------------------
 stops i2c, no polling needed
 -------------function description end-------------------------------------------------------
 **/
-static void stop_s()
+static void s_stop(void)
 {
 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
 }
 
 /**
 -------------function description-----------------------------------------------------------
-static uint8_t selectMode_s(uint8_t SLA_addr,I2C_MODE_t p_mode)
+static uint8_t s_selectMode(uint8_t SLA_addr,I2C_MODE_t p_mode)
 
 SLA_addr: Slave SLA address 7bit
 p_mode: I2C_READ_MODE/I2C_WRITE_MODE   
@@ -231,20 +201,20 @@ is called after 'start_s()' selects address and R/W.
 THe adress is  7 bit address (x) and mode is I2C_READ_MODE or I2C_WRITE_MODE
 -------------function description end-------------------------------------------------------
 **/
-static void selectMode_s(uint8_t SLA_addr,I2C_MODE_t p_mode) //SLA_x is SLA+R/W
+static void s_selectMode(uint8_t p_SLA_addr,I2C_MODE_t p_mode) //SLA_x is SLA+R/W
 {
 	//must send address now
 	if(p_mode==I2C_WRITE_MODE)
 	{
-		TWDR=((SLA_addr<<1)&(~0b1));
+		TWDR=((p_SLA_addr<<1)&(~0b1));
 	}
 	else if(p_mode==I2C_READ_MODE)
 	{
-		TWDR=((SLA_addr<<1)|(0b1));
+		TWDR=((p_SLA_addr<<1)|(0b1));
 	}
 	TWCR |= (1<<TWINT);
 	TWCR |= (1<<TWINT)|(1<<TWSTA)|(1<<TWEN);
-	if (!int_is_enabled)
+	if (!s_int_is_enabled)
 	{
 	  while ((TWCR & (1<<TWINT)) == 0) //poll
 	  {} 
@@ -255,21 +225,21 @@ static void selectMode_s(uint8_t SLA_addr,I2C_MODE_t p_mode) //SLA_x is SLA+R/W
 
 /**
 -------------function description-----------------------------------------------------------
-static void write_s(uint8_t data)
+static void s_write(uint8_t data)
 
 data: data to be sent to  slave 
 RET: void
 ----------------description-----------------------------------------------------------------
-Write may be called as manny time as needed after selecting mode 'selectMode_s()' with once. 
+Write may be called as manny time as needed after selecting mode 's_selectMode()' with once. 
 Will poll if interrupt is disabled
 -------------function description end-------------------------------------------------------
 **/
-static void write_s(uint8_t data)
+static void s_write(uint8_t p_data)
 {
-	TWDR = data;
+	TWDR = p_data;
 	TWCR = (1<<TWINT)|(1<<TWEN);
 	
-	if (!int_is_enabled)
+	if (!s_int_is_enabled)
 	{
 		while ((TWCR & (1<<TWINT)) == 0)
 		{}
@@ -286,9 +256,9 @@ used for reading message sent, can read data longer than one byte by looping and
 Will poll if interrupt is disabled
 -------------function description end-------------------------------------------------------
 **/
-static uint8_t read_s (bool isLast)
+static uint8_t s_read (bool p_isLast)
 {
-	if (!isLast ) //If we want to read more than 1 byte
+	if (!p_isLast ) //If we want to read more than 1 byte
 	{
 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA);
 	}
@@ -298,7 +268,7 @@ static uint8_t read_s (bool isLast)
 		TWCR = (1<<TWINT) | (1<<TWEN);
 	}
 	
-	if (!int_is_enabled)
+	if (!s_int_is_enabled)
 	{
 	  while ((TWCR & (1<<TWINT)) == 0)
 	  {}
@@ -309,19 +279,44 @@ static uint8_t read_s (bool isLast)
 	return 0;
 }
 
-static bool setBusy_s(bool status)
+/**
+-------------function description-----------------------------------------------------------
+static bool s_setBusy(bool p_status)
+bool p_status: set flag
+
+RET: returns flag status
+----------------description-----------------------------------------------------------------
+may be used as a primitive mutex when using several i2c devices in isr
+-------------function description end-------------------------------------------------------
+**/
+static bool s_setBusy(bool p_status)
 {	
-	busy_flag=status;
-	return  busy_flag;
+	s_busy_flag		=	p_status;
+	return  s_busy_flag;
 }
 
-
-static bool getBusy_s(void)
+/**
+-------------function description-----------------------------------------------------------
+bool s_getBusy(void)
+RET: returns status
+----------------description-----------------------------------------------------------------
+is used before  s_setBusy to read current flag status.
+-------------function description end-------------------------------------------------------
+**/
+static bool s_getBusy(void)
 {
-	return busy_flag;
+	return s_busy_flag;
 }
 
-static uint8_t getStatus_s(void)
+/**
+-------------function description-----------------------------------------------------------
+static uint8_t s_getStatus(uint8_t isLast)
+RET: TWSR status code
+----------------description-----------------------------------------------------------------
+retiurns TWSR status code, is used for debugging purposes or ISR state machhines
+-------------function description end-------------------------------------------------------
+**/
+static uint8_t s_getStatus(void)
 {
 	return (TWSR)&(0b11111000);
 }

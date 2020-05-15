@@ -55,6 +55,7 @@ typedef void (*void_RET_int16ptr_PAR)(int16_t*);
 
 typedef struct
 {
+	/**
 	uint8_RET_void_PAR		start;
 	void_function_t			stop;
 	void_function_t			enterWrite;
@@ -62,6 +63,7 @@ typedef struct
 	void_RET_uint8_PAR		selectRegister;
 	void_RET_uint8_PAR		write;
 	uint8_RET_bool_PAR		read;
+	**/
 	void_RET_int16ptr_PAR	getPitchRoll;
 	void_RET_int32ptr_PAR	getAccelXYZ;	
 	void_RET_int32ptr_PAR	getGyroXYZ;
@@ -70,7 +72,7 @@ typedef struct
 	void_RET_uint8_PAR		accerelSettings;
 	void_function_t			reset;
 	
-	GA_data_struct*			data;
+
 }GA_t;
 GA_t* get_GA_interface(i2c_t* i2c_interface);
 

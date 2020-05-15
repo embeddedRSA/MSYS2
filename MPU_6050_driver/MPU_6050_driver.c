@@ -15,11 +15,11 @@
 #define PI_DIV_180	57.2957795130823
 
 //private member
-static i2c_t*			i2c;
-static uint8_t			currentAddr			=	1;
-static GA_data_struct	data_struct;
-static GA_t				GA_interface;
-static bool				initialized			=	false;
+static GA_t				s_GA_interface;
+static i2c_t*			s_i2c;
+static bool				s_initialized		=	false;
+static uint8_t			s_currentAddr		=	1;
+static GA_data_struct	s_data_struct;
 static uint8_t			s_gyroRange;
 static uint8_t			s_accelRange;
 static double			s_scalefact_accel	=	0;
@@ -28,41 +28,44 @@ static uint8_t	s_start(void);
 static void		s_stop(void);
 static void		s_enterWrite(void);
 static void		s_enterRead(void);
-static void		s_selectRegister(reg_addr_t reg_addr);
-static void		s_write(uint8_t data);
-static uint8_t	s_read(bool is_last);
-static void		s_getPitchRoll(int16_t *pitchRoll);
-static void		s_getAccelXYZ(int32_t* XYZ);
-static void		s_getGyroXYZ(int32_t* XYZ);
+static void		s_selectRegister(reg_addr_t p_reg_addr);
+static void		s_write(uint8_t p_data);
+static uint8_t	s_read(bool p_is_last);
+static void		s_getPitchRoll(int16_t *p_pitchRoll);
+static void		s_getAccelXYZ(int32_t* p_XYZ);
+static void		s_getGyroXYZ(int32_t* p_XYZ);
 static void		s_gatherData(void);
 static void		s_gyroSettings(uint8_t p_range);
 static void		s_accerelSettings(uint8_t p_range);
 static void		s_reset(void);
 
-GA_t* get_GA_interface(i2c_t* i2c_interface)
+GA_t* get_GA_interface(i2c_t* p_i2c_interface)
 {
 	
-	if (!initialized)
+	if (!s_initialized)
 	{
-		i2c=i2c_interface;
+		s_i2c=p_i2c_interface;
 		
-			GA_interface.start					=	s_start;
-			GA_interface.stop					=	s_stop;
-			GA_interface.enterWrite				=	s_enterWrite;
-			GA_interface.enterRead				=	s_enterRead;
-			GA_interface.selectRegister			=	s_selectRegister;
-			GA_interface.write					=	s_write;
-			GA_interface.read					=	s_read;
-			GA_interface.getPitchRoll 			=	s_getPitchRoll;
-			GA_interface.getAccelXYZ			=	s_getAccelXYZ;
-			GA_interface.getGyroXYZ				=	s_getGyroXYZ;
-			GA_interface.gatherData				=	s_gatherData;
-			GA_interface.gyroSettings			=	s_gyroSettings;
-			GA_interface.accerelSettings		=	s_accerelSettings;
-			GA_interface.reset					=	s_reset;
-			initialized=true;		
+			s_GA_interface.reset					=	s_reset;
+			s_GA_interface.gyroSettings				=	s_gyroSettings;
+			s_GA_interface.accerelSettings			=	s_accerelSettings;
+			s_GA_interface.getPitchRoll 			=	s_getPitchRoll;
+			s_GA_interface.getAccelXYZ				=	s_getAccelXYZ;
+			s_GA_interface.getGyroXYZ				=	s_getGyroXYZ;
+			s_GA_interface.gatherData				=	s_gatherData;
+			/**
+			s_GA_interface.start					=	s_start;
+			s_GA_interface.stop						=	s_stop;
+			s_GA_interface.enterWrite				=	s_enterWrite;
+			s_GA_interface.enterRead				=	s_enterRead;
+			s_GA_interface.selectRegister			=	s_selectRegister;
+			s_GA_interface.write					=	s_write;
+			s_GA_interface.read						=	s_read;
+			**/
+			
+			s_initialized=true;		
 	}
-	return &GA_interface; 
+	return &s_GA_interface; 
 }
 
 static void s_gatherData(void)
@@ -173,98 +176,98 @@ static void s_reset(void)
 
 static uint8_t s_start(void)
 {
-	i2c->start();
+	s_i2c->start();
 	return 1;
 
 }
 static void s_stop(void)
 {
-	i2c->stop();
+	s_i2c->stop();
 }
 static void s_enterWrite(void)
 {
 	
-	i2c->selectmode(ADDR_0,I2C_WRITE_MODE);
+	s_i2c->selectmode(ADDR_0,I2C_WRITE_MODE);
 	
 }
 static void s_enterRead(void)
 {
 
-	i2c->selectmode(ADDR_0,I2C_READ_MODE);
+	s_i2c->selectmode(ADDR_0,I2C_READ_MODE);
 	
 }
-static void s_selectRegister(reg_addr_t reg_addr)
+static void s_selectRegister(reg_addr_t p_reg_addr)
 {
-	currentAddr=reg_addr;
-	i2c->write(reg_addr);
+	s_currentAddr=p_reg_addr;
+	s_i2c->write(p_reg_addr);
 }
-static void s_write(uint8_t data)
+static void s_write(uint8_t p_data)
 {
-	i2c->write(data);
+	s_i2c->write(p_data);
 }
-static uint8_t s_read(bool is_last)
+static uint8_t s_read(bool p_is_last)
 {
-	int16_t temp=i2c->read(is_last);
+	int16_t temp=s_i2c->read(p_is_last);
 	
-	switch (currentAddr)
+	switch (s_currentAddr)
 	{
 		//accelerometer
 		case ACCEL_XOUT_H:
-			data_struct.accel_x=temp<<8;
+			s_data_struct.accel_x=temp<<8;
 		break;
 		
 		case ACCEL_XOUT_L:
-		data_struct.accel_x|=temp;
+		s_data_struct.accel_x|=temp;
 		break;
 		
 		case ACCEL_YOUT_H:
-			data_struct.accel_y=temp<<8;
+			s_data_struct.accel_y=temp<<8;
 		break;
 		
 		case ACCEL_YOUT_L:
-			data_struct.accel_y|=temp;
+			s_data_struct.accel_y|=temp;
 		break;
 		
 		case ACCEL_ZOUT_H:
-			data_struct.accel_z=temp<<8;
+			s_data_struct.accel_z=temp<<8;
 		break;
 		
 		case ACCEL_ZOUT_L:
-			data_struct.accel_z|=temp;
+			s_data_struct.accel_z|=temp;
 		break;
 		
 		//temperature
 		case TEMP_OUT_H:
-			data_struct.temp=temp<<8;
+			s_data_struct.temp=temp<<8;
 		break;
 		
 		case TEMP_OUT_L:
-			data_struct.temp|=temp;
+			s_data_struct.temp|=temp;
 		break;
 		
 		//Gyro
 		case GYRO_XOUT_H:
-			data_struct.gyro_x=temp<<8;
+			s_data_struct.gyro_x=temp<<8;
 		break;
 		
 		case GYRO_XOUT_L:
-			data_struct.gyro_x|=temp;
+			s_data_struct.gyro_x|=temp;
 		break;
 		
 		case GYRO_YOUT_H:
-			data_struct.gyro_y=temp<<8;
+			s_data_struct.gyro_y=temp<<8;
 		break;
 		
 		case GYRO_YOUT_L:
-			data_struct.gyro_y|=temp;
+			s_data_struct.gyro_y|=temp;
 		break;
 			
 		case GYRO_ZOUT_H:
-			data_struct.gyro_z=temp<<8;
+			s_data_struct.gyro_z=temp<<8;
 		break;
 				
 		case GYRO_ZOUT_L:
-			data_struct.gyro_z|=temp;
+			s_data_struct.gyro_z|=temp;
 		break;
 		
 		default:
@@ -272,39 +275,39 @@ static uint8_t s_read(bool is_last)
 		break;
 	}
 	
-	currentAddr++;
+	s_currentAddr++;
 	//SendInteger(UART0,currentAddr);
 	//SendString(UART0,"\n");
 return temp;
 }
 
-static void s_getAccelXYZ(int32_t* XYZ)
+static void s_getAccelXYZ(int32_t* p_XYZ)
 {
 	//return mG
-	XYZ[0]=(int32_t)((data_struct.accel_x)/(s_scalefact_accel/1000.0));
-	XYZ[1]=(int32_t)((data_struct.accel_y)/(s_scalefact_accel/1000.0));
-	XYZ[2]=(int32_t)((data_struct.accel_z)/(s_scalefact_accel/1000.0));
+	p_XYZ[0]=(int32_t)((s_data_struct.accel_x)/(s_scalefact_accel/1000.0));
+	p_XYZ[1]=(int32_t)((s_data_struct.accel_y)/(s_scalefact_accel/1000.0));
+	p_XYZ[2]=(int32_t)((s_data_struct.accel_z)/(s_scalefact_accel/1000.0));
 
 	
 	////return mm/s^2
-	//XYZ[0]=(int32_t)(MS_SQR*(data_struct.accel_x)/(s_scalefact_accel/1000.0));
-	//XYZ[1]=(int32_t)(MS_SQR*(data_struct.accel_y)/(s_scalefact_accel/1000.0));
-	//XYZ[2]=(int32_t)(MS_SQR*(data_struct.accel_z)/(s_scalefact_accel/1000.0));
+	//p_XYZ[0]=(int32_t)(MS_SQR*(data_struct.accel_x)/(s_scalefact_accel/1000.0));
+	//p_XYZ[1]=(int32_t)(MS_SQR*(data_struct.accel_y)/(s_scalefact_accel/1000.0));
+	//p_XYZ[2]=(int32_t)(MS_SQR*(data_struct.accel_z)/(s_scalefact_accel/1000.0));
 }
 
-static void s_getGyroXYZ(int32_t* XYZ)
+static void s_getGyroXYZ(int32_t* p_XYZ)
 {
 	//return in deg/s
-	XYZ[0]=(int32_t)((data_struct.gyro_x)/(s_scalefact_gyro));
-	XYZ[1]=(int32_t)((data_struct.gyro_y)/(s_scalefact_gyro));
-	XYZ[2]=(int32_t)((data_struct.gyro_z)/(s_scalefact_gyro));
+	p_XYZ[0]=(int32_t)((s_data_struct.gyro_x)/(s_scalefact_gyro));
+	p_XYZ[1]=(int32_t)((s_data_struct.gyro_y)/(s_scalefact_gyro));
+	p_XYZ[2]=(int32_t)((s_data_struct.gyro_z)/(s_scalefact_gyro));
 }
 
-static void s_getPitchRoll(int16_t *pitchRoll)
+static void s_getPitchRoll(int16_t *p_pitchRoll)
 {	
-	pitchRoll[0] = (int16_t)((atan2(((data_struct.accel_y)/s_scalefact_accel),((data_struct.accel_z)/s_scalefact_accel)))*PI_DIV_180);
-	pitchRoll[1] = (int16_t)((atan2((-1.0 * (data_struct.accel_x)/s_scalefact_accel) , sqrt(((data_struct.accel_y)/s_scalefact_accel) * ((data_struct.accel_y)/s_scalefact_accel) 
-					+ ((data_struct.accel_z)/s_scalefact_accel) * ((data_struct.accel_z)/s_scalefact_accel))))*PI_DIV_180);
+	p_pitchRoll[0] = (int16_t)((atan2(((s_data_struct.accel_y)/s_scalefact_accel),((s_data_struct.accel_z)/s_scalefact_accel)))*PI_DIV_180);
+	p_pitchRoll[1] = (int16_t)((atan2((-1.0 * (s_data_struct.accel_x)/s_scalefact_accel) , sqrt(((s_data_struct.accel_y)/s_scalefact_accel) * ((s_data_struct.accel_y)/s_scalefact_accel) 
+					+ ((s_data_struct.accel_z)/s_scalefact_accel) * ((s_data_struct.accel_z)/s_scalefact_accel))))*PI_DIV_180);
 
 //https://wiki.dfrobot.com/How_to_Use_a_Three-Axis_Accelerometer_for_Tilt_Sensing
 
