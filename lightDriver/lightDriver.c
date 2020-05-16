@@ -33,8 +33,9 @@ static void initLightDriver(void)
 {
 		DDRH |= (1<<PH4);	//Sets portH4 as output.
 		DDRH |= (1<<PH5);	//Sets portH5 as output.
-		TCCR4B=0b00000101;	//Sets timer 4 to no prescaling and last WGM42.
-		TCCR4A = 0b00101001;	//Set on compare match channel B 5:4, set on compare match channel C 3:2, fast PWM mode and 8-bit. 
+		TCCR4B=0b00000001;	//Sets timer 4 to no prescaling
+		TCCR4A = 0b00101001;	//Compare match channel B 5:4, Compare match channel C 3:2, PWM, phase correct 8-bit. 
+
 }
 
 static void setFrontlight(unsigned char percent)
