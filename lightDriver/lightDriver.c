@@ -40,7 +40,13 @@ static void initLightDriver(void)
 
 static void setFrontlight(unsigned char percent)
 {
-	uint8_t percentA=(percent>0) ? percent:1;	//Checkup if percentA >0 if not its 1
+	uint8_t percentA;
+	
+	if(percent>100){	//checkup 
+	percentA=100;}
+	else
+	percentA=percent;
+	
 	uint16_t frontLight=((255*percentA)/100);	//percentage of full OCR4B TOP value.
 	
 	OCR4B=(uint8_t)frontLight;	//setting output compare.
@@ -48,7 +54,13 @@ static void setFrontlight(unsigned char percent)
 
 static void setBacklight(unsigned char percent)
 {
-	uint8_t percentB=(percent>0) ? percent:1;	//Checkup
+	uint8_t percentB;
+		
+	if(percent>100){	//checkup
+	percentB=100;}
+	else
+	percentB=percent;
+	
 	uint16_t BackLight=((255*percentB)/100);	//percentage of full OCR4C TOP value.
 	
 	OCR4C=(uint8_t)BackLight;	//setting output compare.	
