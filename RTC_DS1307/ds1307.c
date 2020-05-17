@@ -1,23 +1,51 @@
-#include <avr/io.h>
-#include <util/delay.h>
-#include <stdbool.h>
+/*
+ * ds1307.c
+ *
+ * Created: 12-04-2020 10:46:21
+ *  Author: Anders
+ */
+
 #include "ds1307.h"
 #include "i2c_driver.h"
 
+static uint8_t init=0;
 
+//For i2c "object"
 static i2c_t* i2c;
 
-//Initialize the RTC
-void ds1307_init(i2c_t* p_i2c)
+//"Object for RTC"
+static RTC_t RTCinterface;
+
+//Static functions so only this .c file can see them
+static void ds1307_init(i2c_t* p_i2c);
+static uint8_t ds1307_dec2bcd(uint8_t val);
+static uint8_t ds1307_bcd2dec(uint8_t val);
+static void ds1307_setDateAndTime(uint8_t year, uint8_t month, uint8_t day, uint8_t weekDay, uint8_t hour, uint8_t minute, uint8_t second);
+static void ds1307_getDateAndTime(uint8_t *year, uint8_t *month, uint8_t *day, uint8_t *hour, uint8_t *minute, uint8_t *second);
+
+//Constructor
+RTC_t *get_RTC_interface(void)
+{
+	if (!init)
+	{
+		RTCinterface.initRTC=ds1307_init;
+		RTCinterface.setDateTime=ds1307_setDateAndTime;
+		RTCinterface.getDateTime=ds1307_getDateAndTime;
+	}
+	return &RTCinterface;
+};
+
+
+//Initialize the i2c communication for the RTC
+static void ds1307_init(i2c_t* p_i2c)
 {
 	i2c=p_i2c;
 	//init i2c communication
 	i2c->init(10000,0); 
-
 }
 
 //Decimal uint8_t to BCD
-uint8_t ds1307_dec2bcd(uint8_t val)
+static uint8_t ds1307_dec2bcd(uint8_t val)
 {
 	return val + 6 * (val / 10);
 }
@@ -28,9 +56,18 @@ static uint8_t ds1307_bcd2dec(uint8_t val)
 	return val - 6 * (val >> 4);
 }
 
-
-//Set the date and time
-void ds1307_setDateAndTime(uint8_t year, uint8_t month, uint8_t day, uint8_t weekDay, uint8_t hour, uint8_t minute, uint8_t second)
+/**
+-------------function description-----------------------------------------------------------
+static void ds1307_setDateAndTime(uint8_t year, uint8_t month, uint8_t day, uint8_t weekDay, 
+uint8_t hour, uint8_t minute, uint8_t second)
+	To set the time and date for the RTC.  
+	RET: Void
+----------------description-----------------------------------------------------------------
+To set the time and date for the DS1307 RTC in its timekeeper registers, 
+done via the i2c driver. 
+-------------function description end-------------------------------------------------------
+**/
+static void ds1307_setDateAndTime(uint8_t year, uint8_t month, uint8_t day, uint8_t weekDay, uint8_t hour, uint8_t minute, uint8_t second)
 {
 	//First check if any input is over limit
 	if (second < 0 || second > 59 ||
@@ -68,8 +105,18 @@ void ds1307_setDateAndTime(uint8_t year, uint8_t month, uint8_t day, uint8_t wee
 	
 }
 
-
-void ds1307_getDateAndTime(uint8_t *year, uint8_t *month, uint8_t *day, uint8_t *hour, uint8_t *minute, uint8_t *second)
+/**
+-------------function description-----------------------------------------------------------
+static void ds1307_getDateAndTime(uint8_t *year, uint8_t *month, uint8_t *day, uint8_t *hour, 
+uint8_t *minute, uint8_t *second)
+	To get the latest time and date form the RTC.  
+	RET: Void
+----------------description-----------------------------------------------------------------
+To get the latest time and date form the DS1307 RTC in its timekeeper registers, 
+done via the i2c driver. Weekday "day" is not used in the function.  
+-------------function description end-------------------------------------------------------
+**/
+static void ds1307_getDateAndTime(uint8_t *year, uint8_t *month, uint8_t *day, uint8_t *hour, uint8_t *minute, uint8_t *second)
 {
 	i2c->start();
 	i2c->selectmode((DS1307_ADDR),I2C_WRITE_MODE); //Write select
