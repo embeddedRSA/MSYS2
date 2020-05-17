@@ -1,18 +1,35 @@
-
-#ifndef DS1307_H
-#define DS1307_H
-
+/*
+ * ds1307.h
+ *
+ * Created: 12-04-2020 10:45:52
+ *  Author: Anders
+ */ 
+#include <avr/io.h>
+#include <util/delay.h>
+#include <stdbool.h>
 #include "i2c_driver.h"
 
 //definitions
 #define DS1307_ADDR 0x68 //device address
 
 
-//functions
-extern void ds1307_init(i2c_t* p_i2c);
-extern void ds1307_setDateAndTime(uint8_t year, uint8_t month, uint8_t day, uint8_t weekDay, uint8_t hour, uint8_t minute, uint8_t second);
-extern void ds1307_getDateAndTime(uint8_t *year, uint8_t *month, uint8_t *day, uint8_t *hour, uint8_t *minute, uint8_t *second);
+#ifndef DS1307_H
+#define DS1307_H
 
-void getRTCInterface(i2c_t* p_i2c);  
+typedef void(*void_ret_ObjPtr_PAR)(i2c_t*);
+typedef void(*void_ret_uint8_7PAR)(uint8_t,uint8_t,uint8_t,uint8_t,uint8_t,uint8_t,uint8_t);
+typedef void(*void_ret_uint8ptr_6PAR)(uint8_t*,uint8_t*,uint8_t*,uint8_t*,uint8_t*,uint8_t*);
+
+
+typedef struct
+{
+	void_ret_ObjPtr_PAR initRTC;
+	void_ret_uint8_7PAR setDateTime;
+	void_ret_uint8ptr_6PAR getDateTime;
+	
+} RTC_t;
+
+RTC_t *get_RTC_interface(void);
+  
 
 #endif

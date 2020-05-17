@@ -1,8 +1,8 @@
 /*
  * RTCtest.c
  *
- * Created: 02-05-2020 13:07:44
- * Author : anders
+ * Created: 01-05-2020 13:07:44
+ * Author : Anders
  */ 
 
 #include <stdlib.h>
@@ -19,6 +19,7 @@
 
 #define myUART UART0
 i2c_t *i2c_object;
+RTC_t *RTC_object;
 
 int main(void)
 {
@@ -27,9 +28,10 @@ int main(void)
 	InitUART(myUART, 9600, 8, 'N');
 	
 	i2c_object=get_i2c_interface();
+	RTC_object=get_RTC_interface();
 	
 	//init ds1307
-	ds1307_init(i2c_object);
+	RTC_object->initRTC(i2c_object);
 	
 	uint8_t year = 0;
 	uint8_t month = 0;
@@ -39,11 +41,12 @@ int main(void)
 	uint8_t second = 0;
 
 	//remember to set the weekday 1-7 correct!
-	ds1307_setDateAndTime(20, 12, 31, 4, 23, 59, 35);
+	RTC_object->setDateTime(20, 12, 31, 4, 23, 59, 35);
 	
     while (1) 
     {
-		ds1307_getDateAndTime(&year, &month, &day, &hour, &minute, &second);
+		//get the time and date
+		RTC_object->getDateTime(&year, &month, &day, &hour, &minute, &second);
 		
 		 _delay_ms(1000);
 		 //write time and date over the uart every second
