@@ -7,15 +7,48 @@
 
 #include "speedSensor.h"
 #include <stdio.h>
+#include <avr/eeprom.h>
+#include <stdbool.h>
 
+static uint8_t revPerSec[4];
+static uint32_t milestoneCount;
+
+static speedSensorInterface_t myInterface;
+static bool initialized = false;
 static float revLength; //Keeping the one revolution travel distance in meters
-static float sumint8(uint8_t* revs);
+static uint16_t sumRevolutions(void);
 
-void initSpeedSensor(float wheelDiameter)
+static void initSpeedSensor(float wheelDiameter);
+static void updateMilestoneCount(void);
+static void eepromSave(void);
+static void updateRevolutionCount(uint8_t revs);
+
+static float getSpeedKMH(void);
+static float getTripDistance(void);
+
+speedSensorInterface_t* speedSensor_getDriver(float wheelDiameter)
+{
+	if (!initialized)
+	{
+		initSpeedSensor(wheelDiameter);
+		myInterface.getSpeedInKmh = getSpeedKMH;
+		myInterface.getTripDistance = getTripDistance;
+		myInterface.saveMilestoneCount = eepromSave;
+		myInterface.updateMilestoneCount = updateMilestoneCount;
+		myInterface.updateRevolutionCount = updateRevolutionCount;
+	}
+	return &myInterface;
+}
+
+static void initSpeedSensor(float wheelDiameter)
 {
 	float wheelD=(wheelDiameter/200); //Calculations to meters centered ( /100 & /2)
 	revLength=(wheelD*3.1415); //One revolution gives meters
-	
+	milestoneCount = eeprom_read_dword(0);
+	if (milestoneCount == 0xFFFFFFFF)
+	{
+		milestoneCount = 0;
+	}
 	//Timer2 is used for keeping time of rpm measurement.
 	// Timer2: Normal mode, No prescaling
 	TCCR2A = 0b00000000;
@@ -33,37 +66,48 @@ void initSpeedSensor(float wheelDiameter)
 }
 
 
-float getSpeedKMH(void) //WORKS TESTED 
+static float getSpeedKMH(void) //WORKS TESTED 
 {
 	//char buffer[10];
 	
-	float KMH = (sumint8(revPerSec)/4)*revLength*3.6; // Revolutions per second times revolution length = m/s. time 3.6 = km/h
+	float KMH = ((float)sumRevolutions()/4)*revLength*3.6; // Revolutions per second times revolution length = m/s. time 3.6 = km/h
 	
 	return KMH; 
 }
 
-float getTripDistance(void)  //WORKS TESTED 
+static float getTripDistance(void)  //WORKS TESTED 
 { 
 	
-	float KMD = ((revLength*(float)revolutionsTrip)/1000); //Total KM distance driven
+	float KMD = ((revLength*(float)milestoneCount)/1000); //Total KM distance driven
 	return KMD;
 }
 
-void updateRevForCalc(uint8_t revs)
+static void updateMilestoneCount()
+{
+	milestoneCount++;
+}
+
+static void updateRevolutionCount(uint8_t revs)
 {
 	static uint8_t cnt = 0;
 	revPerSec[cnt] = revs;
 	cnt = (cnt+1) % 4;
 }
 
-static float sumint8(uint8_t* revs)
+static uint16_t sumRevolutions(void)
 {
-	float retVal = 0;
+	uint16_t retVal = 0;
 	uint8_t i = 0;
 	for (i = 0; i<4; i++)
 	{
-		retVal += (float)revs[i];
+		retVal += revPerSec[i];
 	}
 	
 	return retVal;
+}
+
+
+static void eepromSave(void)
+{
+	eeprom_write_dword(0,milestoneCount);
 }

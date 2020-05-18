@@ -13,27 +13,34 @@
 #include "speedSensor.h"
 #include "uart.h"
 
-int kmTotal;
+static uint32_t kmTotal;
+static uint16_t timerOverflows;
+static uint16_t timerCount;
+static uint8_t checkpointCnt;
+static uint8_t revolutionsForCalc;
+
+static speedSensorInterface_t* speedSensor;
 
 // Select the UART to test (UART0, UART1, UART2 or UART3)
 #define myUART UART0
 
 int main(void)
 {
-	initSpeedSensor(65); //65 cm wheel diameter
+	checkpointCnt = 0;
+	speedSensor = speedSensor_getDriver(65);
 	
 	//uart setup
 	InitUART(myUART, 9600, 8, 'N');
 	
 	while (1)
 	{
-		kmTotal = getTripDistance();
+		kmTotal = speedSensor->getTripDistance();
 		
 			
 		PORTB &= ~(1<<PB5); //debug 
 		
 		SendString(myUART, "KMH: ");
-		float f = getSpeedKMH();
+		float f = speedSensor->getSpeedInKmh();
 		int r = (int)f;
 		int d = (f-r)*100;
 		SendInteger(myUART,r);
@@ -51,7 +58,7 @@ int main(void)
 
 ISR(INT4_vect)
 {
-	revolutionsTrip++; //Counts up the revolutions for calculating trip length
+	speedSensor->updateMilestoneCount();
 	revolutionsForCalc++; //Counts up the revolutions for speed calculation.
 }
 
@@ -68,9 +75,16 @@ ISR(TIMER2_OVF_vect)
 		timerOverflows = 0; //reset timer
 		PORTB |=(1<<PB5); //debug
 		
-		updateRevForCalc(revolutionsForCalc);
-		revolutionsForCalc=0; //Resetting after getting value for KHM calculation  
+		speedSensor->updateRevolutionCount(revolutionsForCalc);
+		revolutionsForCalc = 0; //Resetting after getting value for KHM calculation  
 		timerCount=0; //Resetting before getting value.
+		checkpointCnt++;
+	}
+	
+	if (checkpointCnt>60) //Save milestone to EEPROM every minute
+	{
+		checkpointCnt = 0;
+		speedSensor->saveMilestoneCount();
 	}
 
 }

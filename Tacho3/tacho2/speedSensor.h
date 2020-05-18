@@ -10,17 +10,24 @@
 #ifndef SPEEDSENSOR_H_
 #define SPEEDSENSOR_H_
 
+typedef void(*void_function_t)(void);
+typedef void(*void_uint8_function_t)(uint8_t);
+typedef float(*float_void_function_t)(void);
 
-unsigned int timerOverflows; 
-unsigned int timerCount;
-uint32_t revolutionsTrip;
-uint8_t revolutionsForCalc;
-uint8_t revPerSec[4];
+typedef struct
+{
+	void_uint8_function_t updateRevolutionCount;
+	
+	void_function_t updateMilestoneCount;
+	void_function_t saveMilestoneCount;
+	
+	float_void_function_t getSpeedInKmh;
+	float_void_function_t getTripDistance;
+	
+	
+}speedSensorInterface_t;
 
-void initSpeedSensor(float wheelDiameter);
-float getSpeedKMH(void);
-float getTripDistance(void); 
-void updateRevForCalc(uint8_t revs);
+speedSensorInterface_t* speedSensor_getDriver(float wheelDiameter);
 
 
 #endif /* SPEEDSENSOR_H_ */
