@@ -2,7 +2,7 @@
  * speedSensor.h
  *
  * Created: 24-04-2020 17:53:52
- *  Author: Anders
+ *  Author: Anders & Aaron 
  */ 
 #include <avr/io.h>
 #include <avr/interrupt.h>

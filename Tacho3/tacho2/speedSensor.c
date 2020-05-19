@@ -2,7 +2,7 @@
  * speedSensor.c
  *
  * Created: 24-04-2020 17:53:35
- *  Author: Anders
+ *  Author: Anders & Aaron 
  */ 
 
 #include "speedSensor.h"
@@ -18,14 +18,15 @@ static bool initialized = false;
 static float revLength; //Keeping the one revolution travel distance in meters
 static uint16_t sumRevolutions(void);
 
+//Static functions 
 static void initSpeedSensor(float wheelDiameter);
 static void updateMilestoneCount(void);
 static void eepromSave(void);
 static void updateRevolutionCount(uint8_t revs);
-
 static float getSpeedKMH(void);
 static float getTripDistance(void);
 
+//Constructor 
 speedSensorInterface_t* speedSensor_getDriver(float wheelDiameter)
 {
 	if (!initialized)
@@ -65,27 +66,26 @@ static void initSpeedSensor(float wheelDiameter)
 	sei();
 }
 
-
-static float getSpeedKMH(void) //WORKS TESTED 
+//Getting the speed in KMH.
+static float getSpeedKMH(void)  
 {
-	//char buffer[10];
-	
 	float KMH = ((float)sumRevolutions()/4)*revLength*3.6; // Revolutions per second times revolution length = m/s. time 3.6 = km/h
-	
 	return KMH; 
 }
 
-static float getTripDistance(void)  //WORKS TESTED 
+//Getting the total traveled distance in KM.
+static float getTripDistance(void)   
 { 
-	
 	float KMD = ((revLength*(float)milestoneCount)/1000); //Total KM distance driven
 	return KMD;
 }
 
+//Increment the milestoneCount
 static void updateMilestoneCount()
 {
 	milestoneCount++;
 }
+
 
 static void updateRevolutionCount(uint8_t revs)
 {
@@ -94,6 +94,7 @@ static void updateRevolutionCount(uint8_t revs)
 	cnt = (cnt+1) % 4;
 }
 
+//Moving average to get the revolutions
 static uint16_t sumRevolutions(void)
 {
 	uint16_t retVal = 0;
@@ -106,7 +107,7 @@ static uint16_t sumRevolutions(void)
 	return retVal;
 }
 
-
+//For saving the total trip in km to EEPROM.
 static void eepromSave(void)
 {
 	eeprom_write_dword(0,milestoneCount);
