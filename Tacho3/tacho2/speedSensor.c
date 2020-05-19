@@ -36,6 +36,7 @@ speedSensorInterface_t* speedSensor_getDriver(float wheelDiameter)
 		myInterface.saveMilestoneCount = eepromSave;
 		myInterface.updateMilestoneCount = updateMilestoneCount;
 		myInterface.updateRevolutionCount = updateRevolutionCount;
+		initialized = true;
 	}
 	return &myInterface;
 }
@@ -77,14 +78,13 @@ static float getSpeedKMH(void) //WORKS TESTED
 
 static float getTripDistance(void)  //WORKS TESTED 
 { 
-	
-	float KMD = ((revLength*(float)milestoneCount)/1000); //Total KM distance driven
+	float KMD = ((revLength*milestoneCount)/1000); //Total KM distance driven
 	return KMD;
 }
 
 static void updateMilestoneCount()
 {
-	milestoneCount++;
+	milestoneCount += 1;
 }
 
 static void updateRevolutionCount(uint8_t revs)
