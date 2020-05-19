@@ -778,14 +778,14 @@ END GROUP
  .debug_frame   0x000000d4       0x74 speedSensor.o
  .debug_frame   0x00000148       0xb4 uart.o
 
-.debug_str      0x00000000      0x810
+.debug_str      0x00000000      0x84a
  *(.debug_str)
  .debug_str     0x00000000      0x3e6 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.3.300/gcc/dev/atmega2560/avr6/crtatmega2560.o
- .debug_str     0x000003e6      0x29e main.o
-                                0x2e2 (size before relaxing)
- .debug_str     0x00000684       0xd9 speedSensor.o
+ .debug_str     0x000003e6      0x295 main.o
+                                0x2d9 (size before relaxing)
+ .debug_str     0x0000067b      0x11c speedSensor.o
                                 0x320 (size before relaxing)
- .debug_str     0x0000075d       0xb3 uart.o
+ .debug_str     0x00000797       0xb3 uart.o
                                 0x21a (size before relaxing)
 
 .debug_loc      0x00000000      0x678

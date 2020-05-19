@@ -2,7 +2,7 @@
  * tachometer.c
  *
  * Created: 24-04-2020 17:49:23
- * Author : Anders
+ * Author : Anders & Aaron 
  */ 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -56,7 +56,7 @@ int main(void)
 }
 
 
-ISR(INT4_vect)
+ISR(INT4_vect) //PE4 
 {
 	speedSensor->updateMilestoneCount();
 	revolutionsForCalc++; //Counts up the revolutions for speed calculation.
