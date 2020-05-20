@@ -10,7 +10,10 @@
 #include "Drivers/screen/screen.h"
 #include "Drivers/screen/rgb565.h"
 #include "Drivers/touch/touch.h"
+#include "Drivers/tacho/tacho.h"
 #include <util/delay.h>
+#include <avr/interrupt.h>
+
 typedef enum
 {
 	ALL = 0,
@@ -28,8 +31,14 @@ enum
 	NUMBER_OF_COLORS
 };
 
+static uint16_t timerOverflows;
+static uint16_t timerCount;
+static uint8_t checkpointCnt;
+static uint8_t revolutionsForCalc;
+
 static lcdDriverInterface_t* screen;
 static touchDriverInterface_t* touch;
+static speedSensorInterface_t* speedSensor;
 
 static GUIstate_t currentState = TEMPERATURE;
 static GUIstate_t previousState = VELOCITY;
@@ -53,6 +62,7 @@ int main(void)
 	setUpGUIColors();
 	screen = lcdDriver_getDriver();
 	touch = touchDriver_getDriver();
+	speedSensor = speedSensor_getDriver(65);
     while (1) 
     {
 		uint16_t val = touch->readTouchX();
@@ -106,6 +116,39 @@ int main(void)
     }
 	
 	return 0;
+}
+
+ISR(INT3_vect) //PE4
+{
+	speedSensor->updateMilestoneCount();
+	revolutionsForCalc++; //Counts up the revolutions for speed calculation.
+}
+
+
+//TIMER 2 interrupts every second to measure how many revolutions the wheel has made.
+ISR(TIMER2_OVF_vect)
+{
+	// After 62500 interrupts overflows the timer counts another timer to get other times.
+	// Because of CPU clock and prescaling 8bit timer overflows every 16.063 us. Delay=prescaler*(OCRn+1)/fcpu
+	timerOverflows++;
+	
+	if (timerOverflows == 62500)	// 16.063us*62500=1.004s
+	{
+		timerOverflows = 0; //reset timer
+		PORTB |=(1<<PB5); //debug
+		
+		speedSensor->updateRevolutionCount(revolutionsForCalc);
+		revolutionsForCalc = 0; //Resetting after getting value for KHM calculation
+		timerCount=0; //Resetting before getting value.
+		checkpointCnt++;
+	}
+	
+	if (checkpointCnt>60) //Save milestone to EEPROM every minute
+	{
+		checkpointCnt = 0;
+		speedSensor->saveMilestoneCount();
+	}
+
 }
 
 static void GUI_sm()
