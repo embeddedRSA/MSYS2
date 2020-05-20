@@ -23,11 +23,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   9 .debug_frame  000001fc  00000000  00000000  00003fe0  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00000810  00000000  00000000  000041dc  2**0
+ 10 .debug_str    0000084a  00000000  00000000  000041dc  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00000678  00000000  00000000  000049ec  2**0
+ 11 .debug_loc    00000678  00000000  00000000  00004a26  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000090  00000000  00000000  00005064  2**0
+ 12 .debug_ranges 00000090  00000000  00000000  0000509e  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -193,14 +193,7 @@ Disassembly of section .text:
  122:	6e cf       	rjmp	.-292    	; 0x0 <__vectors>
 
 00000124 <main>:
-// Select the UART to test (UART0, UART1, UART2 or UART3)
-#define myUART UART0
-
-int main(void)
-{
-	checkpointCnt = 0;
  124:	10 92 1b 02 	sts	0x021B, r1	; 0x80021b <checkpointCnt>
-	speedSensor = speedSensor_getDriver(65);
  128:	60 e0       	ldi	r22, 0x00	; 0
  12a:	70 e0       	ldi	r23, 0x00	; 0
  12c:	82 e8       	ldi	r24, 0x82	; 130
@@ -208,9 +201,6 @@ int main(void)
  130:	55 d1       	rcall	.+682    	; 0x3dc <speedSensor_getDriver>
  132:	90 93 19 02 	sts	0x0219, r25	; 0x800219 <__data_end+0x1>
  136:	80 93 18 02 	sts	0x0218, r24	; 0x800218 <__data_end>
-	
-	//uart setup
-	InitUART(myUART, 9600, 8, 'N');
  13a:	0e e4       	ldi	r16, 0x4E	; 78
  13c:	28 e0       	ldi	r18, 0x08	; 8
  13e:	40 e8       	ldi	r20, 0x80	; 128
@@ -220,20 +210,8 @@ int main(void)
  146:	80 ec       	ldi	r24, 0xC0	; 192
  148:	90 e0       	ldi	r25, 0x00	; 0
  14a:	a2 d1       	rcall	.+836    	; 0x490 <InitUART>
-		SendChar(myUART,'.');
-		SendInteger(myUART,d);
-		
-		
-		SendString(myUART, "     KHM_TOTAL: ");
-		SendInteger(myUART, kmTotal);
  14c:	ce e1       	ldi	r28, 0x1E	; 30
  14e:	d2 e0       	ldi	r29, 0x02	; 2
-	//uart setup
-	InitUART(myUART, 9600, 8, 'N');
-	
-	while (1)
-	{
-		kmTotal = speedSensor->getTripDistance();
  150:	e0 91 18 02 	lds	r30, 0x0218	; 0x800218 <__data_end>
  154:	f0 91 19 02 	lds	r31, 0x0219	; 0x800219 <__data_end+0x1>
  158:	00 84       	ldd	r0, Z+8	; 0x08
@@ -245,18 +223,12 @@ int main(void)
  166:	70 93 1f 02 	sts	0x021F, r23	; 0x80021f <kmTotal+0x1>
  16a:	80 93 20 02 	sts	0x0220, r24	; 0x800220 <kmTotal+0x2>
  16e:	90 93 21 02 	sts	0x0221, r25	; 0x800221 <kmTotal+0x3>
-		
-			
-		PORTB &= ~(1<<PB5); //debug 
  172:	2d 98       	cbi	0x05, 5	; 5
-		
-		SendString(myUART, "KMH: ");
  174:	60 e0       	ldi	r22, 0x00	; 0
  176:	72 e0       	ldi	r23, 0x02	; 2
  178:	80 ec       	ldi	r24, 0xC0	; 192
  17a:	90 e0       	ldi	r25, 0x00	; 0
  17c:	e2 d1       	rcall	.+964    	; 0x542 <SendString>
-		float f = speedSensor->getSpeedInKmh();
  17e:	e0 91 18 02 	lds	r30, 0x0218	; 0x800218 <__data_end>
  182:	f0 91 19 02 	lds	r31, 0x0219	; 0x800219 <__data_end+0x1>
  186:	06 80       	ldd	r0, Z+6	; 0x06
@@ -264,21 +236,16 @@ int main(void)
  18a:	e0 2d       	mov	r30, r0
  18c:	19 95       	eicall
  18e:	4b 01       	movw	r8, r22
-		int r = (int)f;
  190:	5c 01       	movw	r10, r24
  192:	db d2       	rcall	.+1462   	; 0x74a <__fixsfsi>
  194:	6b 01       	movw	r12, r22
-		int d = (f-r)*100;
-		SendInteger(myUART,r);
  196:	7c 01       	movw	r14, r24
  198:	80 ec       	ldi	r24, 0xC0	; 192
  19a:	90 e0       	ldi	r25, 0x00	; 0
-		SendChar(myUART,'.');
  19c:	e6 d1       	rcall	.+972    	; 0x56a <SendInteger>
  19e:	6e e2       	ldi	r22, 0x2E	; 46
  1a0:	80 ec       	ldi	r24, 0xC0	; 192
  1a2:	90 e0       	ldi	r25, 0x00	; 0
-		SendInteger(myUART,d);
  1a4:	c8 d1       	rcall	.+912    	; 0x536 <SendChar>
  1a6:	b6 01       	movw	r22, r12
  1a8:	dd 0c       	add	r13, r13
@@ -298,22 +265,17 @@ int main(void)
  1c4:	c2 d2       	rcall	.+1412   	; 0x74a <__fixsfsi>
  1c6:	80 ec       	ldi	r24, 0xC0	; 192
  1c8:	90 e0       	ldi	r25, 0x00	; 0
-		
-		
-		SendString(myUART, "     KHM_TOTAL: ");
  1ca:	cf d1       	rcall	.+926    	; 0x56a <SendInteger>
  1cc:	66 e0       	ldi	r22, 0x06	; 6
  1ce:	72 e0       	ldi	r23, 0x02	; 2
  1d0:	80 ec       	ldi	r24, 0xC0	; 192
  1d2:	90 e0       	ldi	r25, 0x00	; 0
-		SendInteger(myUART, kmTotal);
  1d4:	b6 d1       	rcall	.+876    	; 0x542 <SendString>
  1d6:	68 81       	ld	r22, Y
  1d8:	79 81       	ldd	r23, Y+1	; 0x01
  1da:	80 ec       	ldi	r24, 0xC0	; 192
  1dc:	90 e0       	ldi	r25, 0x00	; 0
  1de:	c5 d1       	rcall	.+906    	; 0x56a <SendInteger>
-		SendChar(myUART,'\r'); //newline
  1e0:	6d e0       	ldi	r22, 0x0D	; 13
  1e2:	80 ec       	ldi	r24, 0xC0	; 192
  1e4:	90 e0       	ldi	r25, 0x00	; 0
@@ -322,12 +284,6 @@ int main(void)
 
 000001ea <__vector_5>:
  1ea:	1f 92       	push	r1
-	}
-}
-
-
-ISR(INT4_vect)
-{
  1ec:	0f 92       	push	r0
  1ee:	0f b6       	in	r0, 0x3f	; 63
  1f0:	0f 92       	push	r0
@@ -346,18 +302,15 @@ ISR(INT4_vect)
  20a:	bf 93       	push	r27
  20c:	ef 93       	push	r30
  20e:	ff 93       	push	r31
-	speedSensor->updateMilestoneCount();
  210:	e0 91 18 02 	lds	r30, 0x0218	; 0x800218 <__data_end>
  214:	f0 91 19 02 	lds	r31, 0x0219	; 0x800219 <__data_end+0x1>
  218:	02 80       	ldd	r0, Z+2	; 0x02
  21a:	f3 81       	ldd	r31, Z+3	; 0x03
  21c:	e0 2d       	mov	r30, r0
  21e:	19 95       	eicall
-	revolutionsForCalc++; //Counts up the revolutions for speed calculation.
  220:	80 91 1a 02 	lds	r24, 0x021A	; 0x80021a <revolutionsForCalc>
  224:	8f 5f       	subi	r24, 0xFF	; 255
  226:	80 93 1a 02 	sts	0x021A, r24	; 0x80021a <revolutionsForCalc>
-}
  22a:	ff 91       	pop	r31
  22c:	ef 91       	pop	r30
  22e:	bf 91       	pop	r27
@@ -379,11 +332,6 @@ ISR(INT4_vect)
  24e:	18 95       	reti
 
 00000250 <__vector_15>:
-
-
-//TIMER 2 interrupts every second to measure how many revolutions the wheel has made.
-ISR(TIMER2_OVF_vect)
-{
  250:	1f 92       	push	r1
  252:	0f 92       	push	r0
  254:	0f b6       	in	r0, 0x3f	; 63
@@ -403,27 +351,17 @@ ISR(TIMER2_OVF_vect)
  270:	bf 93       	push	r27
  272:	ef 93       	push	r30
  274:	ff 93       	push	r31
-	// After 62500 interrupts overflows the timer counts another timer to get other times. 
-	// Because of CPU clock and prescaling 8bit timer overflows every 16.063 us. Delay=prescaler*(OCRn+1)/fcpu
-	timerOverflows++;
  276:	80 91 1c 02 	lds	r24, 0x021C	; 0x80021c <timerOverflows>
  27a:	90 91 1d 02 	lds	r25, 0x021D	; 0x80021d <timerOverflows+0x1>
  27e:	01 96       	adiw	r24, 0x01	; 1
  280:	90 93 1d 02 	sts	0x021D, r25	; 0x80021d <timerOverflows+0x1>
  284:	80 93 1c 02 	sts	0x021C, r24	; 0x80021c <timerOverflows>
-	
-	if (timerOverflows == 62500)	// 16.063us*62500=1.004s
  288:	84 32       	cpi	r24, 0x24	; 36
  28a:	94 4f       	sbci	r25, 0xF4	; 244
  28c:	b1 f4       	brne	.+44     	; 0x2ba <__vector_15+0x6a>
-	{
-		timerOverflows = 0; //reset timer
  28e:	10 92 1d 02 	sts	0x021D, r1	; 0x80021d <timerOverflows+0x1>
  292:	10 92 1c 02 	sts	0x021C, r1	; 0x80021c <timerOverflows>
-		PORTB |=(1<<PB5); //debug
  296:	2d 9a       	sbi	0x05, 5	; 5
-		
-		speedSensor->updateRevolutionCount(revolutionsForCalc);
  298:	e0 91 18 02 	lds	r30, 0x0218	; 0x800218 <__data_end>
  29c:	f0 91 19 02 	lds	r31, 0x0219	; 0x800219 <__data_end+0x1>
  2a0:	01 90       	ld	r0, Z+
@@ -431,31 +369,20 @@ ISR(TIMER2_OVF_vect)
  2a4:	e0 2d       	mov	r30, r0
  2a6:	80 91 1a 02 	lds	r24, 0x021A	; 0x80021a <revolutionsForCalc>
  2aa:	19 95       	eicall
-		revolutionsForCalc = 0; //Resetting after getting value for KHM calculation  
  2ac:	10 92 1a 02 	sts	0x021A, r1	; 0x80021a <revolutionsForCalc>
-		timerCount=0; //Resetting before getting value.
-		checkpointCnt++;
  2b0:	80 91 1b 02 	lds	r24, 0x021B	; 0x80021b <checkpointCnt>
  2b4:	8f 5f       	subi	r24, 0xFF	; 255
  2b6:	80 93 1b 02 	sts	0x021B, r24	; 0x80021b <checkpointCnt>
-	}
-	
-	if (checkpointCnt>60) //Save milestone to EEPROM every minute
  2ba:	80 91 1b 02 	lds	r24, 0x021B	; 0x80021b <checkpointCnt>
  2be:	8d 33       	cpi	r24, 0x3D	; 61
  2c0:	50 f0       	brcs	.+20     	; 0x2d6 <__vector_15+0x86>
-	{
-		checkpointCnt = 0;
  2c2:	10 92 1b 02 	sts	0x021B, r1	; 0x80021b <checkpointCnt>
-		speedSensor->saveMilestoneCount();
  2c6:	e0 91 18 02 	lds	r30, 0x0218	; 0x800218 <__data_end>
  2ca:	f0 91 19 02 	lds	r31, 0x0219	; 0x800219 <__data_end+0x1>
  2ce:	04 80       	ldd	r0, Z+4	; 0x04
  2d0:	f5 81       	ldd	r31, Z+5	; 0x05
  2d2:	e0 2d       	mov	r30, r0
  2d4:	19 95       	eicall
-	}
-
  2d6:	ff 91       	pop	r31
  2d8:	ef 91       	pop	r30
  2da:	bf 91       	pop	r27
@@ -684,13 +611,13 @@ static void initSpeedSensor(float wheelDiameter)
  44c:	81 60       	ori	r24, 0x01	; 1
  44e:	80 83       	st	Z, r24
 	
-	// INT4:Rising edge
-	EICRB = 0b00000011;
- 450:	83 e0       	ldi	r24, 0x03	; 3
- 452:	80 93 6a 00 	sts	0x006A, r24	; 0x80006a <__TEXT_REGION_LENGTH__+0x70006a>
-	// Enable extern interrupts INT4 
-	EIMSK |= 0b00010000;
- 456:	ec 9a       	sbi	0x1d, 4	; 29
+	// INT3:Rising edge
+	EICRA = 0b11000000;
+ 450:	80 ec       	ldi	r24, 0xC0	; 192
+ 452:	80 93 69 00 	sts	0x0069, r24	; 0x800069 <__TEXT_REGION_LENGTH__+0x700069>
+	// Enable extern interrupts INT3 
+	EIMSK |= 0b00001000;
+ 456:	eb 9a       	sbi	0x1d, 3	; 29
 	
 	// Global interrupt enable
 	sei();

@@ -57,10 +57,10 @@ static void initSpeedSensor(float wheelDiameter)
 	// Timer2 overflow interrupt enable
 	TIMSK2 |= 0b00000001;
 	
-	// INT4:Rising edge
-	EICRB = 0b00000011;
-	// Enable extern interrupts INT4 
-	EIMSK |= 0b00010000;
+	// INT3:Rising edge
+	EICRA = 0b11000000;
+	// Enable extern interrupts INT3 
+	EIMSK |= 0b00001000;
 	
 	// Global interrupt enable
 	sei();
