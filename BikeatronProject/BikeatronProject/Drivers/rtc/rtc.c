@@ -17,32 +17,22 @@ static i2c_t* i2c;
 static RTC_t RTCinterface;
 
 //Static functions so only this .c file can see them
-static void ds1307_init(i2c_t* p_i2c);
 static uint8_t ds1307_dec2bcd(uint8_t val);
 static uint8_t ds1307_bcd2dec(uint8_t val);
 static void ds1307_setDateAndTime(uint8_t year, uint8_t month, uint8_t day, uint8_t weekDay, uint8_t hour, uint8_t minute, uint8_t second);
 static void ds1307_getDateAndTime(uint8_t *year, uint8_t *month, uint8_t *day, uint8_t *hour, uint8_t *minute, uint8_t *second);
 
 //Constructor
-RTC_t *get_RTC_interface(void)
+RTC_t *get_RTC_interface(i2c_t* i2cInter)
 {
 	if (!init)
 	{
-		RTCinterface.initRTC=ds1307_init;
+		i2c=i2cInter;
 		RTCinterface.setDateTime=ds1307_setDateAndTime;
 		RTCinterface.getDateTime=ds1307_getDateAndTime;
 	}
 	return &RTCinterface;
 };
-
-
-//Initialize the i2c communication for the RTC
-static void ds1307_init(i2c_t* p_i2c)
-{
-	i2c=p_i2c;
-	//init i2c communication
-	i2c->init(10000,0); 
-}
 
 //Decimal uint8_t to BCD
 static uint8_t ds1307_dec2bcd(uint8_t val)

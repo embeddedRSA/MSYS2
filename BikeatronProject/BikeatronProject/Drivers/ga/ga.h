@@ -45,9 +45,9 @@ typedef struct
 
 typedef struct
 {
-	void_uint16ptr_f_t getPitchRoll;
-	void_uint32ptr_f_t getAccelXYZ;	
-	void_uint32ptr_f_t getGyroXYZ;
+	void_int16ptr_f_t getPitchRoll;
+	void_int32ptr_f_t getAccelXYZ;	
+	void_int32ptr_f_t getGyroXYZ;
 	void_void_f_t gatherData;
 	void_uint8_f_t gyroSettings;
 	void_uint8_f_t accerelSettings;

@@ -36,6 +36,9 @@ SUBDIRS :=  \
 ../Drivers \
 ../Drivers/i2c \
 ../Drivers/ga \
+../Drivers/adc \
+../Drivers/light_sensor \
+../Drivers/light_controller \
 ../Drivers/temp \
 ../Drivers/tacho \
 ../Drivers/rtc \
@@ -46,8 +49,11 @@ SUBDIRS :=  \
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
+../Drivers/adc/adc.c \
 ../Drivers/ga/ga.c \
 ../Drivers/i2c/i2c.c \
+../Drivers/light_controller/lightcontroller.c \
+../Drivers/light_sensor/lightsensor.c \
 ../Drivers/rtc/rtc.c \
 ../Drivers/screen/screen.c \
 ../Drivers/screen/rgb565.c \
@@ -64,8 +70,11 @@ ASM_SRCS +=
 
 
 OBJS +=  \
+Drivers/adc/adc.o \
 Drivers/ga/ga.o \
 Drivers/i2c/i2c.o \
+Drivers/light_controller/lightcontroller.o \
+Drivers/light_sensor/lightsensor.o \
 Drivers/rtc/rtc.o \
 Drivers/screen/screen.o \
 Drivers/screen/rgb565.o \
@@ -75,8 +84,11 @@ Drivers/touch/touch.o \
 main.o
 
 OBJS_AS_ARGS +=  \
+Drivers/adc/adc.o \
 Drivers/ga/ga.o \
 Drivers/i2c/i2c.o \
+Drivers/light_controller/lightcontroller.o \
+Drivers/light_sensor/lightsensor.o \
 Drivers/rtc/rtc.o \
 Drivers/screen/screen.o \
 Drivers/screen/rgb565.o \
@@ -86,8 +98,11 @@ Drivers/touch/touch.o \
 main.o
 
 C_DEPS +=  \
+Drivers/adc/adc.d \
 Drivers/ga/ga.d \
 Drivers/i2c/i2c.d \
+Drivers/light_controller/lightcontroller.d \
+Drivers/light_sensor/lightsensor.d \
 Drivers/rtc/rtc.d \
 Drivers/screen/screen.d \
 Drivers/screen/rgb565.d \
@@ -97,8 +112,11 @@ Drivers/touch/touch.d \
 main.d
 
 C_DEPS_AS_ARGS +=  \
+Drivers/adc/adc.d \
 Drivers/ga/ga.d \
 Drivers/i2c/i2c.d \
+Drivers/light_controller/lightcontroller.d \
+Drivers/light_sensor/lightsensor.d \
 Drivers/rtc/rtc.d \
 Drivers/screen/screen.d \
 Drivers/screen/rgb565.d \
@@ -121,6 +139,13 @@ LINKER_SCRIPT_DEP+=
 
 
 # AVR32/GNU C Compiler
+Drivers/adc/adc.o: ../Drivers/adc/adc.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega2560 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\gcc\dev\atmega2560" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
 Drivers/ga/ga.o: ../Drivers/ga/ga.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
@@ -129,6 +154,20 @@ Drivers/ga/ga.o: ../Drivers/ga/ga.c
 	
 
 Drivers/i2c/i2c.o: ../Drivers/i2c/i2c.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega2560 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\gcc\dev\atmega2560" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+Drivers/light_controller/lightcontroller.o: ../Drivers/light_controller/lightcontroller.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega2560 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\gcc\dev\atmega2560" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+Drivers/light_sensor/lightsensor.o: ../Drivers/light_sensor/lightsensor.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega2560 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\gcc\dev\atmega2560" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

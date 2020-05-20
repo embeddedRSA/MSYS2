@@ -44,7 +44,7 @@ static void drawRectangle(uint16_t Width, uint16_t Height);
 
 static void printCharById(uint8_t char_id);
 static void printString(char str[]);
-static void printInteger(uint16_t num);
+static void printInteger(int16_t num);
 static void printFloat(float num);
 
 lcdDriverInterface_t* lcdDriver_getDriver()
@@ -248,7 +248,7 @@ static void printString(char str[])
 	}
 }
 
-static void printInteger(uint16_t num)
+static void printInteger(int16_t num)
 {
 	char buf[10];
 	itoa(num,buf,10);
@@ -258,14 +258,14 @@ static void printInteger(uint16_t num)
 static void printFloat(float num)
 {
 	uint16_t roundnum = num;
-	printInteger(num);
+	printInteger(roundnum);
 	printString(".");
-	float dec = (num-roundnum)*100;
+	uint16_t dec = (num*100)-(roundnum*100);
 	if (dec<10)
 	{
 		printInteger(0);
 	}
-	printInteger((uint16_t)dec);
+	printInteger(dec);
 }
 
 

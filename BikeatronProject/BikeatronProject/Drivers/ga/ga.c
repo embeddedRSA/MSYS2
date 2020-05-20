@@ -9,6 +9,7 @@
 #include "ga.h"
 #include "../i2c/i2c.h"
 #include <math.h>
+#include <stdint.h>
 #define ACCEL_SETTING_REG 28
 #define GYRO_SETTING_REG 27
 #define MS_SQR		9.80665

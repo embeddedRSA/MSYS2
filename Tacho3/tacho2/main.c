@@ -25,18 +25,19 @@ static speedSensorInterface_t* speedSensor;
 
 int main(void)
 {
-	checkpointCnt = 0;
-	speedSensor = speedSensor_getDriver(65);
 	
 	//uart setup
 	InitUART(myUART, 9600, 8, 'N');
-	
+	checkpointCnt = 0;
+	speedSensor = speedSensor_getDriver(65);
+	sei();
 	while (1)
 	{			
 		PORTB &= ~(1<<PB5); //debug 
 		
 		SendString(myUART, "KMH: ");
 		float f = speedSensor->getSpeedInKmh();
+		//float f = 100.10;
 		int r = (int)f;
 		int d = (f-r)*100;
 		SendInteger(myUART,r);
@@ -45,12 +46,15 @@ int main(void)
 		
 		SendString(myUART, "     KHM_TOTAL: ");
 		f = speedSensor->getTripDistance();
+		//f = 12.98;
 		r = (int)f;
 		d = (f-r)*100;
 		SendInteger(myUART,r);
 		SendChar(myUART,'.');
 		SendInteger(myUART,d);
 		SendChar(myUART,'\r'); //newline
+		SendChar(myUART,'\n'); //newline
+		_delay_ms(1000);
 		
 	}
 }
@@ -85,6 +89,7 @@ ISR(TIMER2_OVF_vect)
 	{
 		checkpointCnt = 0;
 		speedSensor->saveMilestoneCount();
+		SendString(myUART, "IM SAVING TO EEPROM ");
 	}
 
 }

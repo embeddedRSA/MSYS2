@@ -46,6 +46,7 @@ static void getDataDHT(uint8_t* temp, uint8_t* humid)
 {
 
 	uint8_t dataRecived, j;
+	dataRecived = 0;
 	int8_t i;
 	uint8_t data[5]; //To store all received data
 	uint8_t array[5]; //The save and checked data after CRC

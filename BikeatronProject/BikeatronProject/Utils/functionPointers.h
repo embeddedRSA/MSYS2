@@ -17,12 +17,13 @@ typedef void(*void_bool_f_t)(bool);
 typedef void(*void_uint8_f_t)(uint8_t);
 typedef void(*void_2_uint8_f_t)(uint8_t,uint8_t);
 typedef void(*void_uint16_f_t)(uint16_t);
+typedef void(*void_int16_f_t)(int16_t);
 typedef void(*void_2_uint16_f_t)(uint16_t,uint16_t);
 typedef void(*void_string_f_t)(char*);
 typedef void(*void_float_f_t)(float);
 typedef void(*void_2_uint8ptr_f_t)(uint8_t*,uint8_t*);
-typedef void(*void_uint16ptr_f_t)(uint16_t*);
-typedef void(*void_uint32ptr_f_t)(uint32_t*);
+typedef void(*void_int16ptr_f_t)(int16_t*);
+typedef void(*void_int32ptr_f_t)(int32_t*);
 typedef void(*void_doubleptr_f_t)(double*);
 
 typedef bool(*bool_void_f_t)(void);

@@ -22,7 +22,7 @@ typedef struct
 	void_2_uint16_f_t setCursor;
 	void_2_uint16_f_t drawRectangle;
 	void_string_f_t printString;
-	void_uint16_f_t printInteger;
+	void_int16_f_t printInteger;
 	void_float_f_t printFloat;
 	
 }lcdDriverInterface_t;

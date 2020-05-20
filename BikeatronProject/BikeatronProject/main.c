@@ -6,11 +6,19 @@
  */ 
 
 #define F_CPU 16000000
+#define LIGHT_TRESH 180
 #include <stdint.h>
 #include "Drivers/screen/screen.h"
 #include "Drivers/screen/rgb565.h"
 #include "Drivers/touch/touch.h"
 #include "Drivers/tacho/tacho.h"
+#include "Drivers/temp/temp.h"
+#include "Drivers/rtc/rtc.h"
+#include "Drivers/i2c/i2c.h"
+#include "Drivers/adc/adc.h"
+#include "Drivers/light_sensor/lightsensor.h"
+#include "Drivers/light_controller/lightcontroller.h"
+#include "Drivers/ga/ga.h"
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
@@ -39,6 +47,13 @@ static uint8_t revolutionsForCalc;
 static lcdDriverInterface_t* screen;
 static touchDriverInterface_t* touch;
 static speedSensorInterface_t* speedSensor;
+static DHT_t* tempSensor;
+static RTC_t* myClock;
+static i2c_t* myI2C;
+static ADC_t* myADC;
+static LightSensor_t* myLightSensor;
+static lightDriver_t* myLights;
+static GA_t* myGyro;
 
 static GUIstate_t currentState = TEMPERATURE;
 static GUIstate_t previousState = VELOCITY;
@@ -48,12 +63,10 @@ static uint16_t GUIstateColors[NUMBER_OF_COLORS][NUMBER_OF_STATES];
 static uint16_t rcnt = 0;
 static uint16_t lcnt = 0;
 
-static float speed;
-static float distance;
-static uint8_t temperature;
-
+static bool lightFlag = false;
 
 static void GUI_sm(void);
+static void updateGUI_sm();
 static void setUpGUIColors(void);
 static void drawGrid(void);
 
@@ -63,6 +76,22 @@ int main(void)
 	screen = lcdDriver_getDriver();
 	touch = touchDriver_getDriver();
 	speedSensor = speedSensor_getDriver(65);
+	tempSensor = getDHTInterface();
+	myADC	= get_ADC_interface();
+	myLights = get_lightDriverInterface();
+	myLightSensor = get_lightSensor_interface(myADC);
+	myI2C = get_i2c_interface();
+	//myClock = get_RTC_interface(myI2C);
+	//myClock->setDateTime(20,5,20,3,16,45,30);
+	//myGyro = get_GA_interface(myI2C);
+	
+	myI2C->init(10000,false);
+	myADC->initADC(AVCC,0);
+	myLightSensor->init(0, LIGHT_TRESH);
+	myLights->init();
+	//myGyro->reset();
+	//myGyro->accerelSettings(1);
+	sei();
     while (1) 
     {
 		uint16_t val = touch->readTouchX();
@@ -113,6 +142,18 @@ int main(void)
 			eeprom_write_word(0,cnt);
 		}
 		*/
+		if (myLightSensor->getLightStatus() && !lightFlag)
+		{
+			myLights->setBack(100);
+			myLights->setFront(100);
+			lightFlag = true;
+		}
+		else if(lightFlag)
+		{
+			myLights->setBack(0);
+			myLights->setFront(0);
+			lightFlag = false;
+		}
     }
 	
 	return 0;
@@ -141,6 +182,10 @@ ISR(TIMER2_OVF_vect)
 		revolutionsForCalc = 0; //Resetting after getting value for KHM calculation
 		timerCount=0; //Resetting before getting value.
 		checkpointCnt++;
+		if (previousState == currentState)
+		{
+			updateGUI_sm();
+		}
 	}
 	
 	if (checkpointCnt>60) //Save milestone to EEPROM every minute
@@ -167,28 +212,16 @@ static void GUI_sm()
 			
 			drawGrid();
 			screen->setCursor(35,20);
-			screen->printString("Date");
-			screen->setCursor(35,50);
-			screen->printString("14-05-20");
+			screen->printString("Time");
 			
 			screen->setCursor(210,20);
 			screen->printString("km/t");
-			screen->setCursor(210,50);
-			screen->printFloat(25.87);
 			
 			screen->setCursor(50,100);
 			screen->printString("Temp.");
-			screen->setCursor(60,130);
-			screen->printInteger(28);
-			
-			
-			screen->setCursor(210,110);
-			screen->printString("Steep");
 			
 			screen->setCursor(100,175);
 			screen->printString("Km count");
-			screen->setCursor(130,205);
-			screen->printInteger(100);
 			break;
 			
 			case MILESTONE:
@@ -217,6 +250,7 @@ static void GUI_sm()
 			break;
 		}
 		previousState = currentState;
+		
 		_delay_ms(500);
 	}
 }
@@ -257,3 +291,71 @@ static void drawGrid(void)
 	screen->setCursorColor(GUIstateColors[FONT_COLOR][currentState]);
 }
 
+static void updateGUI_sm(void)
+{
+	switch(currentState)
+	{
+		uint8_t temp,none,hour,min,sec,year,month,day;
+		case ALL:
+		// DATE
+		screen->setCursor(35,50);
+		//myClock->getDateTime(&year,&month,&day,&hour,&min,&sec);
+		screen->printInteger(hour);
+		screen->printString(":");
+		screen->printInteger(min);
+		screen->printString(":");
+		screen->printInteger(sec);
+		// SPEED
+		screen->setCursor(210,50);
+		screen->printFloat(speedSensor->getSpeedInKmh());
+		
+		//TEMP
+		screen->setCursor(60,130);
+		tempSensor->getTempHumid(&temp,&none);
+		screen->printInteger(temp);
+		
+		//STEEPNESS
+		screen->setCursor(210,110);
+		screen->printInteger(day);
+		screen->printString("-");
+		screen->printInteger(month);
+		screen->printString("-");
+		screen->printInteger(year);
+		
+		//MILESTONES
+		screen->setCursor(130,205);
+		screen->printFloat(speedSensor->getTripDistance());
+		break;
+		
+		case MILESTONE:
+		screen->setCursor(80,140);
+		screen->printFloat(speedSensor->getTripDistance());
+		break;
+		
+		case TEMPERATURE:
+		screen->setCursor(80,140);
+		tempSensor->getTempHumid(&temp,&none);
+		screen->printInteger(temp);
+		break;
+		
+		case VELOCITY:
+		screen->setCursor(80,140);
+		screen->printFloat(speedSensor->getSpeedInKmh());
+		break;
+		
+		case STEEPNESS:
+		screen->setCursor(80,120);
+		int16_t pitchroll[2];
+		//myGyro->gatherData();
+		//myGyro->getPitchRoll(pitchroll);
+		screen->printInteger(pitchroll[0]);
+		screen->printString(",");
+		screen->printInteger(pitchroll[1]);
+		break;
+		
+		
+		default:
+		currentState = TEMPERATURE;
+		break;
+	}
+}

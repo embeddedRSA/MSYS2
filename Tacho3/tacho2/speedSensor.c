@@ -13,8 +13,7 @@
 static uint8_t revPerSec[4];
 static uint32_t milestoneCount;
 static float kmCount;
-
-float EEMEM eepromKmCount;
+float EEMEM eepromCount;
 
 static speedSensorInterface_t myInterface;
 static bool initialized = false;
@@ -48,8 +47,7 @@ static void initSpeedSensor(float wheelDiameter)
 {
 	float wheelD=(wheelDiameter/200); //Calculations to meters centered ( /100 & /2)
 	revLength=(wheelD*3.1415); //One revolution gives meters
-	eeprom_busy_wait();
-	kmCount = eeprom_read_float(&eepromKmCount);
+	kmCount = eeprom_read_float(&eepromCount);
 	if (kmCount > 10000)
 	{
 		kmCount = 0;
@@ -67,7 +65,6 @@ static void initSpeedSensor(float wheelDiameter)
 	EIMSK |= 0b00001000;
 	
 	// Global interrupt enable
-	sei();
 }
 
 
@@ -113,5 +110,13 @@ static uint16_t sumRevolutions(void)
 
 static void eepromSave(void)
 {
-	eeprom_update_float(&eepromKmCount,getTripDistance());
+	eeprom_update_float(&eepromCount,getTripDistance());
 }
+
+/*static float getEepromDistance(void)
+{
+	uint16_t v = eeprom_read_word(0);
+	uint16_t dec = eeprom_read_word(3);
+	
+	return v+((float)dec/100);
+}*/
