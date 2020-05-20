@@ -13,7 +13,6 @@
 #include "speedSensor.h"
 #include "uart.h"
 
-static uint32_t kmTotal;
 static uint16_t timerOverflows;
 static uint16_t timerCount;
 static uint8_t checkpointCnt;
@@ -33,10 +32,7 @@ int main(void)
 	InitUART(myUART, 9600, 8, 'N');
 	
 	while (1)
-	{
-		kmTotal = speedSensor->getTripDistance();
-		
-			
+	{			
 		PORTB &= ~(1<<PB5); //debug 
 		
 		SendString(myUART, "KMH: ");
@@ -47,16 +43,20 @@ int main(void)
 		SendChar(myUART,'.');
 		SendInteger(myUART,d);
 		
-		
 		SendString(myUART, "     KHM_TOTAL: ");
-		SendInteger(myUART, kmTotal);
+		f = speedSensor->getTripDistance();
+		r = (int)f;
+		d = (f-r)*100;
+		SendInteger(myUART,r);
+		SendChar(myUART,'.');
+		SendInteger(myUART,d);
 		SendChar(myUART,'\r'); //newline
 		
 	}
 }
 
 
-ISR(INT4_vect) //PE4 
+ISR(INT3_vect) //PE4 
 {
 	speedSensor->updateMilestoneCount();
 	revolutionsForCalc++; //Counts up the revolutions for speed calculation.

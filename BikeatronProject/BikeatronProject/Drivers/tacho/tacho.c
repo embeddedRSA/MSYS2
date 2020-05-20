@@ -5,14 +5,13 @@
  *  Author: Anders
  */ 
 
-#include "speedSensor.h"
+#include "tacho.h"
 #include <stdio.h>
 #include <avr/eeprom.h>
 #include <stdbool.h>
 
 static uint8_t revPerSec[4];
 static uint32_t milestoneCount;
-static float kmCount;
 
 static speedSensorInterface_t myInterface;
 static bool initialized = false;
@@ -46,10 +45,10 @@ static void initSpeedSensor(float wheelDiameter)
 {
 	float wheelD=(wheelDiameter/200); //Calculations to meters centered ( /100 & /2)
 	revLength=(wheelD*3.1415); //One revolution gives meters
-	kmCount = eeprom_read_float(0);
-	if (kmCount > 10000)
+	milestoneCount = eeprom_read_dword(0);
+	if (milestoneCount == 0xFFFFFFFF)
 	{
-		kmCount = 0;
+		milestoneCount = 0;
 	}
 	//Timer2 is used for keeping time of rpm measurement.
 	// Timer2: Normal mode, No prescaling
@@ -79,7 +78,7 @@ static float getSpeedKMH(void) //WORKS TESTED
 
 static float getTripDistance(void)  //WORKS TESTED 
 { 
-	float KMD = ((revLength*milestoneCount)/1000)+kmCount; //Total KM distance driven
+	float KMD = ((revLength*milestoneCount)/1000); //Total KM distance driven
 	return KMD;
 }
 
@@ -110,5 +109,5 @@ static uint16_t sumRevolutions(void)
 
 static void eepromSave(void)
 {
-	eeprom_write_float(0,getTripDistance());
+	eeprom_write_dword(0,milestoneCount);
 }
