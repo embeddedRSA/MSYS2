@@ -81,22 +81,8 @@ int main(void)
 	while (1)
 	{
 		_delay_ms(500);
-		RTC_obj->getDateTime(&year, &month, &day, &hour, &minute, &second);
+
 		
-		 SendChar(UARTADDR,' ');
-		 SendChar(UARTADDR,' ');
-		 //displays time hrs:min:sec
-		 SendChar(UARTADDR,'T');
-		 SendChar(UARTADDR,'i');
-		 SendChar(UARTADDR,'m');
-		 SendChar(UARTADDR,'e');
-		 SendChar(UARTADDR,':');
-		 SendInteger(UARTADDR, hour);
-		 SendChar(UARTADDR,':');
-		 SendInteger(UARTADDR, minute);
-		 SendChar(UARTADDR,':');
-		 SendInteger(UARTADDR, second);
-		SendString(UARTADDR,"\n");
 		
 		GA_obj->gatherData();
 		
@@ -113,7 +99,7 @@ int main(void)
 		SendString(UARTADDR,"deg/s Z: ");
 		SendInteger(UARTADDR, gyrodata[2]);
 		SendString(UARTADDR,"deg/s \n");
-
+		**/
 		SendString(UARTADDR,"Accel X: ");
 		SendInteger(UARTADDR, acceldata[0]);
 		SendString(UARTADDR,"mG Y: ");
@@ -121,13 +107,13 @@ int main(void)
 		SendString(UARTADDR,"mG Z: ");
 		SendInteger(UARTADDR, acceldata[2]);
 		SendString(UARTADDR,"mG \n");
-		
+///**		
 		SendString(UARTADDR,"Pitch Roll: X: ");
 		SendInteger(UARTADDR, dataPR[0]);
 		SendString(UARTADDR,"deg Y: ");
 		SendInteger(UARTADDR, dataPR[1]);
 		SendString(UARTADDR,"deg \n \n ");
-		**/
+	//	**/
 	
 
 	}

@@ -1,9 +1,9 @@
 /*
- * BikeatronProject.c
- *
- * Created: 20-05-2020 11:06:01
- * Author : aaron
- */ 
+* BikeatronProject.c
+*
+* Created: 20-05-2020 11:06:01
+* Author : aaron
+*/
 
 #define F_CPU 16000000
 #define LIGHT_TRESH 180
@@ -69,6 +69,7 @@ static void GUI_sm(void);
 static void updateGUI_sm();
 static void setUpGUIColors(void);
 static void drawGrid(void);
+static void lightRoutine(void);
 
 int main(void)
 {
@@ -81,23 +82,25 @@ int main(void)
 	myLights = get_lightDriverInterface();
 	myLightSensor = get_lightSensor_interface(myADC);
 	myI2C = get_i2c_interface();
-	//myClock = get_RTC_interface(myI2C);
-	//myClock->setDateTime(20,5,20,3,16,45,30);
+	
+	myClock = get_RTC_interface(myI2C);
+	myClock->setDateTime(20,5,20,3,16,45,30);
 	//myGyro = get_GA_interface(myI2C);
 	
 	myI2C->init(10000,false);
+	myI2C->setBusy(false);
 	myADC->initADC(AVCC,0);
 	myLightSensor->init(0, LIGHT_TRESH);
 	myLights->init();
 	//myGyro->reset();
 	//myGyro->accerelSettings(1);
 	sei();
-    while (1) 
-    {
+	while (1)
+	{
 		uint16_t val = touch->readTouchX();
 		
 		if ((val < 2000) && (val > 1))
-		{	
+		{
 			lcnt = 0;
 			rcnt++;
 			_delay_ms(5);
@@ -125,76 +128,112 @@ int main(void)
 			lcnt = 0;
 		}
 		
+	lightRoutine();
+		
+		
+		
+		
 		GUI_sm();
 		/*
 		cnt = eeprom_read_word(0);
 		if (cnt == 0xFFFF)
 		{
-			cnt = 0;
+		cnt = 0;
 		}
 		
 		eepromcnt++;
 		
 		if (eepromcnt > 200)
 		{
-			cnt++;
-			eepromcnt = 0;
-			eeprom_write_word(0,cnt);
+		cnt++;
+		eepromcnt = 0;
+		eeprom_write_word(0,cnt);
 		}
 		*/
+	}
+		
+		
+		return 0;
+}
+
+	ISR(INT3_vect) //PE4
+	{
+	//	speedSensor->updateMilestoneCount();
+		revolutionsForCalc++; //Counts up the revolutions for speed calculation.
+	}
+
+
+	//TIMER 2 interrupts every second to measure how many revolutions the wheel has made.
+	ISR(TIMER2_OVF_vect)
+	{
+		// After 62500 interrupts overflows the timer counts another timer to get other times.
+		// Because of CPU clock and prescaling 8bit timer overflows every 16.063 us. Delay=prescaler*(OCRn+1)/fcpu
+		timerOverflows++;
+		
+		if (timerOverflows == 62500)	// 16.063us*62500=1.004s
+		{
+			timerOverflows = 0; //reset timer
+			PORTB |=(1<<PB5); //debug
+			
+			speedSensor->updateRevolutionCount(revolutionsForCalc);
+			revolutionsForCalc = 0; //Resetting after getting value for KHM calculation
+			timerCount=0; //Resetting before getting value.
+			checkpointCnt++;
+			if (previousState == currentState)
+			{
+				updateGUI_sm();
+			}
+		}
+		
+		if (checkpointCnt>60) //Save milestone to EEPROM every minute
+		{
+			checkpointCnt = 0;
+			speedSensor->saveMilestoneCount();
+		}
+
+	}
+
+static void lightRoutine(void)
+	{
 		if (myLightSensor->getLightStatus() && !lightFlag)
+			{
+					
+					myLights->setFront(100);
+					lightFlag = true;
+			}
+		else if(lightFlag)
+			{
+					myLights->setFront(0);
+					lightFlag = false;
+			}
+		
+		//myGyro->gatherData();
+		int32_t accelXYZ[3];
+		//myGyro->getAccelXYZ(accelXYZ);
+		
+		bool deaccelrate = accelXYZ[0] <= -150;
+		
+		if (deaccelrate && lightFlag)
 		{
 			myLights->setBack(100);
-			myLights->setFront(100);
-			lightFlag = true;
 		}
-		else if(lightFlag)
+		else if (!deaccelrate && lightFlag)
+		{
+			myLights->setBack(70);
+		}
+		else if (deaccelrate && !lightFlag)
+		{
+			myLights->setBack(100);
+		}
+		else if (!deaccelrate && !lightFlag)
 		{
 			myLights->setBack(0);
-			myLights->setFront(0);
-			lightFlag = false;
-		}
-    }
-	
-	return 0;
-}
+		} 
 
-ISR(INT3_vect) //PE4
-{
-	speedSensor->updateMilestoneCount();
-	revolutionsForCalc++; //Counts up the revolutions for speed calculation.
-}
-
-
-//TIMER 2 interrupts every second to measure how many revolutions the wheel has made.
-ISR(TIMER2_OVF_vect)
-{
-	// After 62500 interrupts overflows the timer counts another timer to get other times.
-	// Because of CPU clock and prescaling 8bit timer overflows every 16.063 us. Delay=prescaler*(OCRn+1)/fcpu
-	timerOverflows++;
-	
-	if (timerOverflows == 62500)	// 16.063us*62500=1.004s
-	{
-		timerOverflows = 0; //reset timer
-		PORTB |=(1<<PB5); //debug
 		
-		speedSensor->updateRevolutionCount(revolutionsForCalc);
-		revolutionsForCalc = 0; //Resetting after getting value for KHM calculation
-		timerCount=0; //Resetting before getting value.
-		checkpointCnt++;
-		if (previousState == currentState)
-		{
-			updateGUI_sm();
-		}
-	}
-	
-	if (checkpointCnt>60) //Save milestone to EEPROM every minute
-	{
-		checkpointCnt = 0;
-		speedSensor->saveMilestoneCount();
+		
 	}
 
-}
 
 static void GUI_sm()
 {
@@ -240,8 +279,9 @@ static void GUI_sm()
 			break;
 			
 			case STEEPNESS:
-			screen->setCursor(80,120);
-			screen->printString("   STEP     ");
+			screen->setCursor(80,90);
+			screen->printString(" STEEPNESS  ");
+			
 			break;
 			
 			
@@ -299,7 +339,7 @@ static void updateGUI_sm(void)
 		case ALL:
 		// DATE
 		screen->setCursor(35,50);
-		//myClock->getDateTime(&year,&month,&day,&hour,&min,&sec);
+		myClock->getDateTime(&year,&month,&day,&hour,&min,&sec);
 		screen->printInteger(hour);
 		screen->printString(":");
 		screen->printInteger(min);

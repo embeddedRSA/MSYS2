@@ -71,6 +71,14 @@ GA_t* get_GA_interface(i2c_t* p_i2c_interface)
 
 static void s_gatherData(void)
 {
+/**
+	 if (s_i2c->getBusy)
+	 {
+		 return;
+	 }
+	 **/
+	 s_i2c->setBusy(true);
+	 
 	int i=0;
 	s_start();
 	s_enterWrite();
@@ -90,6 +98,7 @@ static void s_gatherData(void)
 		}
 	}
 	s_stop();
+s_i2c->setBusy(false);
 }
 
 static void s_gyroSettings(uint8_t p_range)
