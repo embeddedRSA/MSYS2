@@ -6,8 +6,6 @@
  */
 
 #include "ds1307.h"
-#include "i2c_driver.h"
-
 static uint8_t init=0;
 
 //For i2c "object"

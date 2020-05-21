@@ -39,6 +39,7 @@ SUBDIRS :=  \
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../../../../i2c/i2c_driver/i2c_driver.c \
+../../../../RTC_DS1307/ds1307.c \
 ../../../../UART/uart.c \
 ../../../MPU_6050_driver.c \
 ../main.c
@@ -52,24 +53,28 @@ ASM_SRCS +=
 
 OBJS +=  \
 libs/i2c_driver.o \
+libs/ds1307.o \
 libs/uart.o \
 libs/MPU_6050_driver.o \
 main.o
 
 OBJS_AS_ARGS +=  \
 libs/i2c_driver.o \
+libs/ds1307.o \
 libs/uart.o \
 libs/MPU_6050_driver.o \
 main.o
 
 C_DEPS +=  \
 libs/i2c_driver.d \
+libs/ds1307.d \
 libs/uart.d \
 libs/MPU_6050_driver.d \
 main.d
 
 C_DEPS_AS_ARGS +=  \
 libs/i2c_driver.d \
+libs/ds1307.d \
 libs/uart.d \
 libs/MPU_6050_driver.d \
 main.d
@@ -89,6 +94,13 @@ LINKER_SCRIPT_DEP+=
 
 # AVR32/GNU C Compiler
 libs/i2c_driver.o: ../../../../i2c/i2c_driver/i2c_driver.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega2560 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\gcc\dev\atmega2560" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+libs/ds1307.o: ../../../../RTC_DS1307/ds1307.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -mrelax -g2 -Wall -mmcu=atmega2560 -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.3.300\gcc\dev\atmega2560" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

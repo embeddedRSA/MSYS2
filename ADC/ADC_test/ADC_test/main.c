@@ -11,7 +11,7 @@
 #include "../../../UART/uart.h"
 #include "../../../lightsensor/lightsensor.h"
 #define F_CPU 16000000
-#define LS_THRESHOLD 180
+#define LS_THRESHOLD 200
 #include <util/delay.h>
 
 
@@ -33,6 +33,8 @@ int main(void)
 	_delay_ms(100);
 	SendString(UART0,"\n");
 	SendInteger(UART0 , LS_interface->getLightStatus());		
+	SendString(UART0,"\n");
+	SendInteger(UART0 , ADC_Interface->getADC_mV(0));
     }
 
 	

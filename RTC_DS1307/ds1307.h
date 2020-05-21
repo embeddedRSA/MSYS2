@@ -4,17 +4,19 @@
  * Created: 12-04-2020 10:45:52
  *  Author: Anders
  */ 
+#ifndef DS1307_H
+#define DS1307_H
+#define F_CPU (16000000)
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdbool.h>
-#include "i2c_driver.h"
+#include "../i2c/i2c_driver/i2c_driver.h"
 
 //definitions
 #define DS1307_ADDR 0x68 //device address
 
 
-#ifndef DS1307_H
-#define DS1307_H
+
 
 typedef void(*void_ret_ObjPtr_PAR)(i2c_t*);
 typedef void(*void_ret_uint8_7PAR)(uint8_t,uint8_t,uint8_t,uint8_t,uint8_t,uint8_t,uint8_t);

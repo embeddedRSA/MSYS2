@@ -198,7 +198,7 @@ p_mode: I2C_READ_MODE/I2C_WRITE_MODE
 RET: void
 ----------------description-----------------------------------------------------------------
 is called after 'start_s()' selects address and R/W.
-THe adress is  7 bit address (x) and mode is I2C_READ_MODE or I2C_WRITE_MODE
+THe adress is  7 bit addre ss (x) and mode is I2C_READ_MODE or I2C_WRITE_MODE
 -------------function description end-------------------------------------------------------
 **/
 static void s_selectMode(uint8_t p_SLA_addr,I2C_MODE_t p_mode) //SLA_x is SLA+R/W

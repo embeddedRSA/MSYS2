@@ -217,7 +217,7 @@ static uint8_t s_read(bool p_is_last)
 		break;
 		
 		case ACCEL_XOUT_L:
-		s_data_struct.accel_x|=temp;
+			s_data_struct.accel_x|=temp;
 		break;
 		
 		case ACCEL_YOUT_H:
@@ -283,12 +283,24 @@ return temp;
 
 static void s_getAccelXYZ(int32_t* p_XYZ)
 {
+	int temp=0;
 	//return mG
-	p_XYZ[0]=(int32_t)((s_data_struct.accel_x)/(s_scalefact_accel/1000.0));
-	p_XYZ[1]=(int32_t)((s_data_struct.accel_y)/(s_scalefact_accel/1000.0));
-	p_XYZ[2]=(int32_t)((s_data_struct.accel_z)/(s_scalefact_accel/1000.0));
-
+	p_XYZ[0]=(int32_t)((((double)s_data_struct.accel_x)/((double)s_scalefact_accel))*1000);
+	temp=(int32_t)((((double)s_data_struct.accel_x)/((double)s_scalefact_accel))*1000);
+	SendInteger(UART0,temp);
+	SendString(UART0,"\n");
 	
+	
+	p_XYZ[1]=(int32_t)((((double)s_data_struct.accel_y)/((double)s_scalefact_accel))*1000);
+	temp=(int32_t)((((double)s_data_struct.accel_y)/((double)s_scalefact_accel))*1000);
+	SendInteger(UART0,temp);
+	SendString(UART0,"\n");
+		
+	p_XYZ[2]=(int32_t)((((double)s_data_struct.accel_z)/((double)s_scalefact_accel))*1000);
+	temp=(int32_t)((((double)s_data_struct.accel_z)/((double)s_scalefact_accel))*1000);
+	SendInteger(UART0,temp);
+	SendString(UART0,"\n");
+	SendString(UART0,"\n");
 	////return mm/s^2
 	//p_XYZ[0]=(int32_t)(MS_SQR*(data_struct.accel_x)/(s_scalefact_accel/1000.0));
 	//p_XYZ[1]=(int32_t)(MS_SQR*(data_struct.accel_y)/(s_scalefact_accel/1000.0));
