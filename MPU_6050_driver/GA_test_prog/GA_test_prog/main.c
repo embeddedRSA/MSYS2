@@ -59,15 +59,7 @@ int main(void)
 	SendString(UARTADDR,"\n");
 	
 	//RTC
-	RTC_obj->initRTC(i2c_obj);
-	RTC_obj->setDateTime(20, 12, 31, 4, 23, 59, 35);
-	
-		uint8_t year = 0;
-		uint8_t month = 0;
-		uint8_t day = 0;
-		uint8_t hour = 0;
-		uint8_t minute = 0;
-		uint8_t second = 0;
+
 	
 	//Set to +- 4G
 	GA_obj->reset();
@@ -91,7 +83,7 @@ int main(void)
 		GA_obj->getAccelXYZ(acceldata);
 		GA_obj->getPitchRoll(dataPR);
 		
-/**
+
 		SendString(UARTADDR,"GYRO X: ");
 		SendInteger(UARTADDR, gyrodata[0]);
 		SendString(UARTADDR,"deg/s Y: ");
@@ -99,7 +91,7 @@ int main(void)
 		SendString(UARTADDR,"deg/s Z: ");
 		SendInteger(UARTADDR, gyrodata[2]);
 		SendString(UARTADDR,"deg/s \n");
-		**/
+	/**	
 		SendString(UARTADDR,"Accel X: ");
 		SendInteger(UARTADDR, acceldata[0]);
 		SendString(UARTADDR,"mG Y: ");

@@ -128,7 +128,7 @@ int main(void)
 			lcnt = 0;
 		}
 		
-	lightRoutine();
+	//lightRoutine();
 		
 		
 		
@@ -210,6 +210,7 @@ static void lightRoutine(void)
 		//myGyro->gatherData();
 		int32_t accelXYZ[3];
 		//myGyro->getAccelXYZ(accelXYZ);
+		/**
 		
 		bool deaccelrate = accelXYZ[0] <= -150;
 		
@@ -230,7 +231,7 @@ static void lightRoutine(void)
 			myLights->setBack(0);
 		} 
 
-		
+		**/
 		
 	}
 

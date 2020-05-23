@@ -89,8 +89,10 @@ static uint16_t s_init(uint32_t p_SCL_f ,bool p_enable_interrupt) //freq is give
 {
 	
 	//no internal pull up implemented so far
-if (p_SCL_f <= 400000)
+if (!(p_SCL_f <= SCL_MAX))
 	{
+		p_SCL_f=SCL_MAX;
+	}
 		//enable TWI clock module 
 	PRR0&=~(1<<PRTWI);
 	
@@ -106,33 +108,19 @@ if (p_SCL_f <= 400000)
 	
 	//constants pre calculated from mathcad 
 			
-		uint8_t TWBR_1= (uint8_t)((F_CPU/(8.0*p_SCL_f))-2.0);
+		uint8_t TWBR_1= (uint8_t)((F_CPU/((double)8.0*p_SCL_f))-(double)2.0);
 
-
-		uint8_t validation = 0xFF;
-
-		if(TWBR_1>0 && TWBR_1<=validation )
-		{
-			//set prescaler
-
-			TWSR&=~(1<<TWPS0);
-			TWSR&=~(1<<TWPS1);
-			//typecast to proper format and insert
-			TWBR = TWBR_1;
-			return TWBR;
-		}
-
-		else
-		{
-			return 0; //return 0 error
-		}
+	//set prescaler to 1 -> 0b00
+		
+	TWSR&=~(1<<TWPS1);
+		TWSR&=~(1<<TWPS0);
+	//typecast to proper format and insert
+	TWBR = TWBR_1;//TWBR_1;
+	return TWBR;
 	
-	}
-else
-	{
-	return 99;
-	}
 }
+
+
 
 /**
 -------------function description-----------------------------------------------------------
